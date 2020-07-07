@@ -1,0 +1,1 @@
+# idle-spongebob-cloudscript
