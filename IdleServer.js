@@ -36,12 +36,6 @@ const TITLE_ID_TOP_TIER_SUFIX = '_TopTier';
 const TITLE_ID_GLOBAL_SUFIX = '_Global';
 
 const SERVER_CONFIG = {
-	apiKeys: {
-		"3D16B": "9QPQ1B5Q64G8Q3DAJE9WUFTC957UP3MZADYICBD97SWBXG853J", // kongregate/production
-		"19081": "CUXQHCSZPSZAPW8B6ABN8CPMOK7HAN1DFDQZJ8IPKMIXMTA1IC", // staging
-		"18A45": "ORX7Y8EKSK5DD1MOKUE86X5D64RQ774359ICEJJMN7U176GOBF"  // auto
-	},
-	webGameIds: ["268831", "273230", "273231"],
 	leaderboardServers: {
 		"3D16B": "http://UltrabitWebServicesProd.ya4zvdebvk.us-west-2.elasticbeanstalk.com/", // kongregate/production
 		"19081": "http://uws-dev-env.ddhjvp3mrf.us-west-1.elasticbeanstalk.com/", // staging
@@ -52,11 +46,11 @@ const SERVER_CONFIG = {
 const PLAYFAB_ENVIRONMENT_CONFIG = {
 	configs: {
 		"18A45": {
-			apiKey: "C5NQN8YPPCOF43HSJEWOJNZ9Z7FI9IMSIZDGU7H1CZEMJTNZT6", // playfab auto
+			apiKey: "ORX7Y8EKSK5DD1MOKUE86X5D64RQ774359ICEJJMN7U176GOBF", // playfab auto
 			logglyTag: 'idle-spongebob-auto-ops'
 		},
 		"3D16B": {
-			apiKey: "1N6S3FUPY9UZPCPRHA5J1UR7TSM3UCA3AERMCIOZ6TFGD3693B",   // playfab kongregate
+			apiKey: "9QPQ1B5Q64G8Q3DAJE9WUFTC957UP3MZADYICBD97SWBXG853J",   // playfab kongregate
 			logglyTag: 'idle-spongebob-kongregate-ops'
 		}
 	},
@@ -289,78 +283,6 @@ handlers.unbanUser = function (args) {
 
 	return updateResult;
 }
-
-handlers.getUnusedWebProducts = function (args) {
-
-	var reqObj = new CloudRequest(args);
-	var kid = reqObj.GetKid();
-	var data = {};
-	if (kid) {
-		var apiKey = reqObj.GetServerApiKey();
-		var rawResponse = http.request('http://www.kongregate.com/api/user_items.json?api_key=' + apiKey + '&user_id=' + kid);
-		var json = JSON.parse(rawResponse);
-		if (json.success) {
-			var items = json.items;
-			var unusedProducts = [];
-			for (var item in items) {
-				if (items[item].remaining_uses > 0) {
-					unusedProducts.push(items[item]);
-				}
-			}
-			if (unusedProducts.length > 0) {
-				data.items = unusedProducts;
-			}
-		}
-	}
-
-	return data;
-};
-
-handlers.getWebProducts = function (args) {
-
-	var apiKey = new CloudRequest(args).GetServerApiKey();
-	var rawResponse = http.request('http://www.kongregate.com/api/items.json?api_key=' + apiKey);
-	var json = JSON.parse(rawResponse);
-	var data = {};
-	if (json.success) {
-		data = json;
-	}
-	return data;
-};
-
-handlers.provisionRewards = function (args) {
-
-	var reqObj = new CloudRequest(args);
-	var bundelId = args.bundleId;
-	var productId = args.productId;
-	var success = false;
-
-	//check for valid web purchase
-	var validProduct = validateWebPurchase(reqObj, productId);
-
-	//consume product
-	if (validProduct != null) {
-		success = consumeWebProduct(reqObj, validProduct.id);
-		if (success) {
-
-			//TODO::JeffS kong does not have a rest endpoint for making a finish purchase call. could log a stat here if hacking becomes an issue.
-			///var params = {};
-			//track(reqObj, params);
-
-			//save record in users internal data blob
-			var internalData = server.GetUserInternalData({ "PlayFabId": currentPlayerId });
-			var data = {};
-			data[Date.now().toString()] = productId;
-			internalData["Data"] = data;
-			log.debug(internalData);
-			server.UpdateUserInternalData(internalData);
-		}
-	}
-
-	var data = { "success": success };
-	return data;
-
-};
 
 var getTitleTierData = function() {
 	var result = null;
@@ -1003,68 +925,6 @@ handlers.distributedUpdateSoftwallLeaderboardScoreForPlayer = function () {
 }
 
 //Functions
-var consumeWebProduct = function (reqObj, id) {
-
-	var apiKey = reqObj.GetServerApiKey();
-	var authToken = reqObj.GetAuthToken();
-	var kid = reqObj.GetKid();
-	var fields = { "api_key": apiKey, "game_auth_token": authToken, "id": id, "user_id": kid };
-	var rawResponse = http.request('http://api.kongregate.com/api/use_item.json', "post", JSON.stringify(fields), "application/json");
-
-	var json = JSON.parse(rawResponse);
-	log.debug(rawResponse);
-	if (json.success) {
-		return true;
-
-	} else {
-		log.debug("Unable to consume product with id: " + productId);
-		return false;
-	}
-};
-
-var validateWebPurchase = function (reqObj, productId) {
-
-	var kid = reqObj.GetKid();
-	var apiKey = reqObj.GetServerApiKey();
-	var rawResponse = http.request('http://www.kongregate.com/api/user_items.json?api_key=' + apiKey + '&user_id=' + kid);
-	var json = JSON.parse(rawResponse);
-	var validProduct = null;
-	if (json.success && json.items != null && json.items != undefined) {
-		var items = json.items;
-		var product = null;
-		for (var item in items) {
-			if (items[item].identifier == productId) {
-				product = items[item];
-				break;
-			}
-		}
-		if (product != null) {
-			if (product.remaining_uses != null && product.remaining_uses > 0) {
-				validProduct = product;
-			} else {
-				log.debug("Item has no more remaining uses: " + productId);
-
-			}
-		} else {
-			log.debug("Unable to validate purchase of item with id: " + productId);
-		}
-	} else {
-		log.debug("Unable to validate purchase of item with id: " + productId + " server responded: " + JSON.stringify(json));
-	}
-	return validProduct;
-
-};
-
-//fire and forget kong analytics call
-var track = function (reqObj, params) {
-	var kid = reqObj.GetKid();
-	if (kid) {
-		params.user_id = kid;
-		params.api_key = reqObj.GetServerApiKey();
-		var rawResponse = http.request('http://api.kongregate.com/api/use_item.json', "POST", params);
-	}
-};
-
 var resetLeaderBoardInternal = function (reqObj, leaderboardName, resetPeriod, resetGracePeriod) {
 	var statisticsResult = null;
 	var errorReason = null;
@@ -1183,22 +1043,6 @@ CloudRequest.prototype.GetAuthToken = function () {
 	return result;
 }
 
-CloudRequest.prototype.GetServerApiKey = function () {
-
-	var result = null;
-	if (this.args != null && this.args != undefined) {
-		var gameId = this.GetGameId();
-		if (gameId != null && gameId != undefined) {
-			if (SERVER_CONFIG.apiKeys.hasOwnProperty(gameId)) {
-				result = SERVER_CONFIG.apiKeys[gameId];
-			} else {
-				log.debug("Unable to locate server api key");
-			}
-		}
-	}
-	return result;
-}
-
 CloudRequest.prototype.GetPlayfabServerApiKey = function () {
 
 	var result = null;
@@ -1214,20 +1058,6 @@ CloudRequest.prototype.GetPlayfabServerApiKey = function () {
 	}
 
 	return result;
-}
-
-CloudRequest.prototype.IsKUserAuthenticated = function () {
-
-	var kid = this.GetKid();
-	var token = this.GetAuthToken();
-	var apiKey = this.GetServerApiKey();
-	var rawResponse = http.request('http://www.kongregate.com/api/authenticate.json?user_id=' + kongId + '&game_auth_token=' + kongToken + '&api_key=' + apiKey);
-	var json = JSON.parse(rawResponse);
-	return json.success;
-}
-
-CloudRequest.prototype.IsWeb = function () {
-	return (SERVER_CONFIG.webGameIds.indexOf(this.GetGameId()) >= 0);
 }
 
 CloudRequest.prototype.IsPlayfab = function () {
