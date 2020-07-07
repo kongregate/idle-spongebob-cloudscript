@@ -1,0 +1,15 @@
+#!/bin/sh
+echo
+if [ -a .commit ]
+    then
+    rm .commit
+    echo "/*" > .GitVersion.js
+    git rev-parse HEAD >> .GitVersion.js
+    git rev-parse --abbrev-ref HEAD >> .GitVersion.js
+    echo "IMPORTANT:" >> .GitVersion.js
+    echo "The above value is not directly mappable to a commit in the repo, but can be used to confirm that the same Cloudscript file is in place between Development and Production" >> .GitVersion.js
+    echo "*/" >> .GitVersion.js
+    git add .GitVersion.js
+    git commit --amend -C HEAD --no-verify
+fi
+exit
