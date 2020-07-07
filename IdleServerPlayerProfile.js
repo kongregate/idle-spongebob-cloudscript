@@ -1,3 +1,4 @@
+const DEFAULT_KONG_NAME = "NoKongName";
 
 var getPlayersProfilesInternal = function(playerIds, functionaName) {
 	var requestParams = {
