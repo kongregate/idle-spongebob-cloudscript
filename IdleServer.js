@@ -37,30 +37,30 @@ const TITLE_ID_GLOBAL_SUFIX = '_Global';
 
 const SERVER_CONFIG = {
 	apiKeys: {
-		"24D7": "GS3WPWPJRDGJ55KOKQAPUKMPHJZMHYGNGN4U9Q3O7TB81S1358", // kongregate/production
-		"476C": "XA6FKYIQ4D1HT6PY6CZHK9YYRUHH8Z5G93KOZYOARIY4T454SW", // staging
-		"7AB": "4ARDS4FIS4OB5BD6DUGSB5ESPO5DKMPISMWS4RMYT8TOWP1G41"  // auto
+		"3D16B": "9QPQ1B5Q64G8Q3DAJE9WUFTC957UP3MZADYICBD97SWBXG853J", // kongregate/production
+		"19081": "CUXQHCSZPSZAPW8B6ABN8CPMOK7HAN1DFDQZJ8IPKMIXMTA1IC", // staging
+		"18A45": "ORX7Y8EKSK5DD1MOKUE86X5D64RQ774359ICEJJMN7U176GOBF"  // auto
 	},
 	webGameIds: ["268831", "273230", "273231"],
 	leaderboardServers: {
-		"24D7": "http://UltrabitWebServicesProd.ya4zvdebvk.us-west-2.elasticbeanstalk.com/", // kongregate/production
-		"476C": "http://uws-dev-env.ddhjvp3mrf.us-west-1.elasticbeanstalk.com/", // staging
-		"7AB": "http://uws-dev-env.ddhjvp3mrf.us-west-1.elasticbeanstalk.com/"  // auto
+		"3D16B": "http://UltrabitWebServicesProd.ya4zvdebvk.us-west-2.elasticbeanstalk.com/", // kongregate/production
+		"19081": "http://uws-dev-env.ddhjvp3mrf.us-west-1.elasticbeanstalk.com/", // staging
+		"18A45": "http://uws-dev-env.ddhjvp3mrf.us-west-1.elasticbeanstalk.com/"  // auto
 	}
 };
 
 const PLAYFAB_ENVIRONMENT_CONFIG = {
 	configs: {
-		"7AB": {
+		"18A45": {
 			apiKey: "C5NQN8YPPCOF43HSJEWOJNZ9Z7FI9IMSIZDGU7H1CZEMJTNZT6", // playfab auto
-			logglyTag: 'idle-frontier-auto-ops'
+			logglyTag: 'idle-spongebob-auto-ops'
 		},
-		"24D7": {
+		"3D16B": {
 			apiKey: "1N6S3FUPY9UZPCPRHA5J1UR7TSM3UCA3AERMCIOZ6TFGD3693B",   // playfab kongregate
-			logglyTag: 'idle-frontier-kongregate-ops'
+			logglyTag: 'idle-spongebob-kongregate-ops'
 		}
 	},
-	playfabIds: ["24D7", "7AB"]
+	playfabIds: ["3D16B", "18A45"]
 };
 
 const LOGGLY_TOKEN = '00cced27-e9fd-49e2-b332-87d611e71937';
