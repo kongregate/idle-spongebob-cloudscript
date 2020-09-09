@@ -1,8 +1,9 @@
 
+const COPPA = "coppa";
+
 handlers.setAndGetCoppaModel = function(args) {
 	var result = {
         "success": false,
-        "coppa" : null,
         "saved" : false
 	};
 
@@ -12,8 +13,8 @@ handlers.setAndGetCoppaModel = function(args) {
         return result;
     }
 
-    result.coppa = {};
-    result.coppa["birthdayTimestamp"] = args.birthdayTimestamp;
+    result[COPPA] = {};
+    result[COPPA]["birthdayTimestamp"] = args.birthdayTimestamp;
 
     var countryCode = null;
     try {
@@ -23,7 +24,7 @@ handlers.setAndGetCoppaModel = function(args) {
         });
 
         countryCode = playerProfileResponse.PlayerProfile.Locations[0].CountryCode;
-        result.coppa["countryCode"] = countryCode;
+        result[COPPA]["countryCode"] = countryCode;
     } catch(e) {
         result["error"] = evaluatePlayFabError(e);
         return { "value" : result };
@@ -31,12 +32,14 @@ handlers.setAndGetCoppaModel = function(args) {
 
     try {
         result["currentPlayerId"] = currentPlayerId;
-        result["readOnly"] = server.UpdateUserReadOnlyData({
-            "PlayFabId" : currentPlayerId,
-            "Data" : {
-                "coppa" : result.coppa
-            }
-        });
+        var readOnlyData = server.GetUserReadOnlyData(
+            { "PlayFabId": currentPlayerId }
+        );
+        var data = {};
+        data[COPPA] = result[COPPA];
+        readOnlyData["Data"] = data;
+
+        updateResult = server.UpdateUserReadOnlyData(readOnlyData);
 
         result.saved = true;
     } catch(e) {
