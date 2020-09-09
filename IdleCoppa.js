@@ -31,15 +31,13 @@ handlers.setAndGetCoppaModel = function(args) {
     }
 
     try {
-        result["currentPlayerId"] = currentPlayerId;
-        var readOnlyData = server.GetUserReadOnlyData(
-            { "PlayFabId": currentPlayerId }
-        );
         var data = {};
         data[COPPA] = JSON.stringify(result[COPPA]);
-        readOnlyData["Data"] = data;
 
-        result["updateResult"] = server.UpdateUserReadOnlyData(readOnlyData);
+        server.UpdateUserReadOnlyData({
+            "PlayFabId": currentPlayerId,
+            "Data" : data
+        });
 
         result.saved = true;
     } catch(e) {
