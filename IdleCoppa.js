@@ -21,6 +21,7 @@ handlers.setAndGetCoppaModel = function(args) {
             "ProfileConstraints" : args.constrains
         });
 
+        log.debug(playerProfile);
         countryCode = playerProfile.Locations[0].CountryCode;
         result.coppa["countryISO3166Code"] = countryCode;
     } catch(e) {
