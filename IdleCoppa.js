@@ -30,6 +30,7 @@ handlers.setAndGetCoppaModel = function(args) {
     }
 
     try {
+        result["currentPlayerId"] = currentPlayerId;
         result["readOnly"] = server.UpdateUserReadOnlyData({
             "PlayFabId" : currentPlayerId,
             "Data" : {
