@@ -39,7 +39,7 @@ handlers.setAndGetCoppaModel = function(args) {
         data[COPPA] = result[COPPA];
         readOnlyData["Data"] = data;
 
-        updateResult = server.UpdateUserReadOnlyData(readOnlyData);
+        result["updateResult"] = server.UpdateUserReadOnlyData(readOnlyData);
 
         result.saved = true;
     } catch(e) {
