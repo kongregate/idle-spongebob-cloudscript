@@ -11,6 +11,7 @@ handlers.setAndGetCoppaModel = function(args) {
         return result;
     }
 
+    result.coppa = {};
     result.coppa["birthdayTimestamp"] = args.birthdayTimestamp;
 
     var countryCode = null;
