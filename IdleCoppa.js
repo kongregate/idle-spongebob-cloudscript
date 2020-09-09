@@ -24,7 +24,7 @@ handlers.setAndGetCoppaModel = function(args) {
         countryCode = playerProfile.Locations[0].CountryCode;
         result.coppa["countryISO3166Code"] = countryCode;
     } catch(e) {
-        result["error"] = e;
+        result["error"] = evaluatePlayFabError(e);
         return { "value" : result };
     }
 
@@ -36,7 +36,7 @@ handlers.setAndGetCoppaModel = function(args) {
             }
         });
     } catch(e) {
-        result["error"] = e;
+        result["error"] = evaluatePlayFabError(e);
         return { "value" : result };
     }
 
