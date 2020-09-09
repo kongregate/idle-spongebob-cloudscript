@@ -2,7 +2,8 @@
 handlers.setAndGetCoppaModel = function(args) {
 	var result = {
         "success": false,
-        "coppa" : null
+        "coppa" : null,
+        "saved" : false
 	};
 
     if (args.birthdayTimestamp == null
@@ -16,14 +17,13 @@ handlers.setAndGetCoppaModel = function(args) {
 
     var countryCode = null;
     try {
-        var playerProfile = server.GetPlayerProfile({
+        var playerProfileResponse = server.GetPlayerProfile({
             "PlayFabId" : currentPlayerId,
             "ProfileConstraints" : args.constrains
         });
 
-        log.debug(playerProfile);
-        countryCode = playerProfile.Locations[0].CountryCode;
-        result.coppa["countryISO3166Code"] = countryCode;
+        countryCode = playerProfileResponse.PlayerProfile.Locations[0].CountryCode;
+        result.coppa["countryCode"] = countryCode;
     } catch(e) {
         result["error"] = evaluatePlayFabError(e);
         return { "value" : result };
@@ -36,6 +36,8 @@ handlers.setAndGetCoppaModel = function(args) {
                 "coppa" : result.coppa
             }
         });
+
+        result.saved = true;
     } catch(e) {
         result["error"] = evaluatePlayFabError(e);
         return { "value" : result };
