@@ -36,7 +36,7 @@ handlers.setAndGetCoppaModel = function(args) {
             { "PlayFabId": currentPlayerId }
         );
         var data = {};
-        data[COPPA] = result[COPPA];
+        data[COPPA] = JSON.stringify(result[COPPA]);
         readOnlyData["Data"] = data;
 
         result["updateResult"] = server.UpdateUserReadOnlyData(readOnlyData);
