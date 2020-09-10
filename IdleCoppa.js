@@ -49,3 +49,4 @@ handlers.setAndGetCoppaModel = function(args) {
     return { "value" : result };
 
 };
+
