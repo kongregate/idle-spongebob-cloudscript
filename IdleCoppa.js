@@ -47,6 +47,27 @@ handlers.setAndGetCoppaModel = function(args) {
 
     result.success = true;
     return { "value" : result };
-
 };
 
+handlers.serverOverwriteCoppaData = function() {
+
+    var result = {
+        "success": false
+    };
+
+    var data = {};
+    data[COPPA] = JSON.stringify(args[COPPA]);
+
+    try {
+        server.UpdateUserReadOnlyData({
+            "PlayFabId": currentPlayerId,
+            "Data" : data
+        });
+    } catch(e) {
+        result["error"] = evaluatePlayFabError(e);
+        return { "value" : result };
+    }
+
+    result.success = true;
+    return { "value" : result };
+}
