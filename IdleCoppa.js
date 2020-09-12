@@ -62,7 +62,7 @@ handlers.serverOverwriteCoppaData = function(args) {
         data = {};
         data[COPPA] = JSON.stringify(args[COPPA]);
     } else {
-        KeysToRemove = [ COPPA ];
+        keysToRemove = [ COPPA ];
     }
 
     try {
