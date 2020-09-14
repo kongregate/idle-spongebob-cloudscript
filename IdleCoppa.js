@@ -47,6 +47,35 @@ handlers.setAndGetCoppaModel = function(args) {
 
     result.success = true;
     return { "value" : result };
-
 };
 
+handlers.serverOverwriteCoppaData = function(args) {
+
+    var result = {
+        "success": false
+    };
+
+    var data = undefined;
+    var keysToRemove = undefined;
+
+    if (args.forceDelete === true) {
+        keysToRemove = [ COPPA ];
+    } else if (args[COPPA]) {
+        data = {};
+        data[COPPA] = JSON.stringify(args[COPPA]);
+    }
+
+    try {
+        server.UpdateUserReadOnlyData({
+            "PlayFabId": currentPlayerId,
+            "Data" : data,
+            "KeysToRemove" : keysToRemove
+        });
+    } catch(e) {
+        result["error"] = evaluatePlayFabError(e);
+        return { "value" : result };
+    }
+
+    result.success = true;
+    return { "value" : result };
+}
