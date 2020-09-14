@@ -55,6 +55,8 @@ handlers.serverOverwriteCoppaData = function(args) {
         "success": false
     };
 
+    log.debug(args);
+
     if (args[COPPA] == undefined) {
         return { "value" : result };
     }
