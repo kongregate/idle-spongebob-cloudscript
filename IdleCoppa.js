@@ -79,3 +79,4 @@ handlers.serverOverwriteCoppaData = function(args) {
     result.success = true;
     return { "value" : result };
 }
+
