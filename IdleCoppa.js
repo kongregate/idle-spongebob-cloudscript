@@ -55,10 +55,6 @@ handlers.serverOverwriteCoppaData = function(args) {
         "success": false
     };
 
-    if (args[COPPA] == undefined) {
-        return { "value" : result };
-    }
-
     var data = undefined;
     var keysToRemove = undefined;
 
