@@ -406,6 +406,8 @@ var updatePlayerTierData = function(currentTierData, newTierData, context) {
 handlers.updatePlayerStatistics = function (args) {
 	var updates = -1;
 
+	var logData = [];
+
 	if (!isPlayerBannedInternal(currentPlayerId)) {
 		updates = 0;
 
@@ -413,8 +415,8 @@ handlers.updatePlayerStatistics = function (args) {
 			"Keys" : [ "eventLeaderboardTutorial" ]
 		});
 
-		log.info('args', args);
-		log.info('tutorialLeaderboardData', tutorialLeaderboardData);
+		logData.push( {'args' : args });
+		logData.push( {'tutorialLeaderboardData' : tutorialLeaderboardData });
 
 		if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 			for (var i = 0; i < args.statistics.length; i++) {
@@ -431,7 +433,7 @@ handlers.updatePlayerStatistics = function (args) {
 						tutorialLeaderboardData
 					);
 
-					log.info('entries', entries);
+					logData.push( {'entries' : entries });
 
 					server.UpdateUserReadOnlyData({
 						"Data" : entries
@@ -447,7 +449,7 @@ handlers.updatePlayerStatistics = function (args) {
 		}
 	}
 
-	return { "value":updates};
+	return { "value":updates, "log" : logData};
 };
 
 var updatePlayerStatistic = function (leaderboardName, value, updateType, tierOverride) {
