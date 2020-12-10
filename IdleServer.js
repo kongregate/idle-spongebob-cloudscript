@@ -413,8 +413,8 @@ handlers.updatePlayerStatistics = function (args) {
 			"Keys" : [ "eventLeaderboardTutorial" ]
 		});
 
-		log.info(args);
-		log.info(tutorialLeaderboardData);
+		log.info('args', args);
+		log.info('tutorialLeaderboardData', tutorialLeaderboardData);
 
 		if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 			for (var i = 0; i < args.statistics.length; i++) {
@@ -431,10 +431,10 @@ handlers.updatePlayerStatistics = function (args) {
 						tutorialLeaderboardData
 					);
 
-					log.info(entries);
+					log.info('entries', entries);
 
 					server.UpdateUserReadOnlyData({
-						"Data" : data
+						"Data" : entries
 					});
 				} else {
 					var updateType = args.statistics[i]["AggregationMethod"];
