@@ -252,6 +252,29 @@ handlers.unbanUser = function (args) {
 	return updateResult;
 }
 
+var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, tutorialConfig) {
+	var entries = [
+		{
+			"player" : playerLeaderboardId,
+			"amount" : amout
+		}
+	];
+
+	if (tutorialConfig && tutorialConfig.entries) {
+		entries = entries.join(tutorialConfig.entries);
+
+		entries.sort((x, y) => {
+			return (x.amount === y.amount)
+				? 0
+				: (x.amount < y.amount)
+				? 1
+				: -1;
+		});
+	}
+
+	return entries;
+}
+
 var getTitleTierData = function() {
 	var result = null;
 
@@ -385,13 +408,35 @@ handlers.updatePlayerStatistics = function (args) {
 
 	if (!isPlayerBannedInternal(currentPlayerId)) {
 		updates = 0;
+
+		var tutorialLeaderboardData = server.GetTitleInternalData({
+			"Keys" : [ "eventLeaderboardTutorial" ]
+		});
+
 		if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 			for (var i = 0; i < args.statistics.length; i++) {
 				var leaderboardName = args.statistics[i]["StatisticName"];
 				var value = args.statistics[i]["Value"];
-				var updateType = args.statistics[i]["AggregationMethod"];
 
-				updatePlayerStatistic(leaderboardName, value, updateType);
+				if (tutorialLeaderboardData
+					&& tutorialLeaderboardData.leaderboardName
+					&& tutorialLeaderboardData.leaderboardName === leaderboardName
+				) {
+					var entries = {};
+					entries[leaderboardName] = buildEventTutorialLeaderboardEntries(getPlayerLeaderboardId(),
+						value,
+						tutorialLeaderboardData
+					);
+
+					server.UpdateUserReadOnlyData({
+						"Data" : data
+					});
+				} else {
+					var updateType = args.statistics[i]["AggregationMethod"];
+
+					updatePlayerStatistic(leaderboardName, value, updateType);
+				}
+
 				updates++;
 			}
 		}
@@ -447,6 +492,29 @@ handlers.getPlayerLeaderboard = function (args) {
 	var result = {
 		"value": { }
 	};
+
+	var tutorialLeaderboardData = server.GetTitleInternalData({
+		"Keys" : [ "eventLeaderboardTutorial" ]
+	});
+
+	if (tutorialLeaderboardData
+		&& tutorialLeaderboardData.leaderboardName
+		&& tutorialLeaderboardData.leaderboardName == args.leaderboardName
+	) {
+		var readOnlyData = server.GetUserReadOnlyData({
+			"PlayFabId": currentPlayerId,
+			"Keys": [ args.leaderboardName ]
+		});
+
+		var entries = readOnlyData.Data[args.leaderboardName].Value
+		result.value = [];
+		for(var idx = 0; idx < entries.length; idx++) {
+			result.value.push(entries[idx].player);
+			result.value.push(entries[idx].value);
+		}
+
+		return result;
+	}
 
 	var requestParams = {
 		"playerId": getPlayerLeaderboardId(),
