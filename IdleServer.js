@@ -413,6 +413,9 @@ handlers.updatePlayerStatistics = function (args) {
 			"Keys" : [ "eventLeaderboardTutorial" ]
 		});
 
+		log.info(args);
+		log.info(tutorialLeaderboardData);
+
 		if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 			for (var i = 0; i < args.statistics.length; i++) {
 				var leaderboardName = args.statistics[i]["StatisticName"];
@@ -427,6 +430,8 @@ handlers.updatePlayerStatistics = function (args) {
 						value,
 						tutorialLeaderboardData
 					);
+
+					log.info(entries);
 
 					server.UpdateUserReadOnlyData({
 						"Data" : data
