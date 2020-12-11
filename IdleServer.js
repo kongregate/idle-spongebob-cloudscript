@@ -426,10 +426,8 @@ handlers.updatePlayerStatistics = function (args) {
 				var value = args.statistics[i]["Value"];
 
 				logData.push( {'leaderboardName' : leaderboardName });
-				logData.push( {'tutorial' : (tutorialLeaderboardData
-					&& tutorialLeaderboardData.leaderboardName
-					&& tutorialLeaderboardData.leaderboardName === leaderboardName)
-				});
+				logData.push( {'tutorialLeaderboardName' : tutorialLeaderboardData.leaderboardName });
+				logData.push( {'isTutorial' : (tutorialLeaderboardData.leaderboardName === leaderboardName) });
 
 				if (tutorialLeaderboardData
 					&& tutorialLeaderboardData.leaderboardName
