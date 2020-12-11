@@ -286,8 +286,9 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 				}
 			}
 
-			if (entryIdx > entries.length) {
-				log.info({"entryIdx" : entryIdx});
+			log.info({"entryIdx" : entryIdx});
+
+			if (entryIdx >= entries.length) {
 				log.info({"entryIdx" : true});
 				entries.push(entry);
 			}
