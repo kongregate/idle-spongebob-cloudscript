@@ -267,7 +267,7 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, value, 
 			var entryIdx = 0;
 			for(entryIdx; entryIdx < entries.length; entryIdx++) {
 				if (entries[entryIdx].value >= entry.value) {
-					entries.splice(entryidx, 0, entry);
+					entries.splice(entryIdx, 0, entry);
 					break;
 				}
 			};
