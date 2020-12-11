@@ -411,9 +411,11 @@ handlers.updatePlayerStatistics = function (args) {
 	if (!isPlayerBannedInternal(currentPlayerId)) {
 		updates = 0;
 
-		var tutorialLeaderboardData = JSON.parse(server.GetTitleInternalData({
+		var data = server.GetTitleInternalData({
 			"Keys" : [ "eventLeaderboardTutorial" ]
-		}));
+		});
+
+		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
 		logData.push( {'args' : args });
 		logData.push( {'tutorialLeaderboardData' : tutorialLeaderboardData });
@@ -500,9 +502,11 @@ handlers.getPlayerLeaderboard = function (args) {
 		"value": { }
 	};
 
-	var tutorialLeaderboardData = JSON.parse(server.GetTitleInternalData({
+	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
-	}));
+	});
+
+	var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
 	if (tutorialLeaderboardData
 		&& tutorialLeaderboardData.leaderboardName

@@ -1,5 +1,5 @@
 /*
-11a4632f915a40d992897bd70f0db603989abaf4
+c5bb6ed0bf15926a58a57a9202ab7a7024de2d09
 lsaenz/event_tutorial_leaderboard
 IMPORTANT:
 The above value is not directly mappable to a commit in the repo, but can be used to confirm that the same Cloudscript file is in place between Development and Production
