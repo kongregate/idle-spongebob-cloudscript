@@ -521,7 +521,7 @@ handlers.getPlayerLeaderboard = function (args) {
 	) {
 		var readOnlyData = server.GetUserInternalData({
 			"PlayFabId": currentPlayerId,
-			"Keys": [ "tutorialLeaderboard" ] //args.leaderboardName ]
+			"Keys": [ args.leaderboardName ]
 		});
 
 		log.info(readOnlyData.Data);
