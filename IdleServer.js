@@ -712,16 +712,26 @@ handlers.updatePlayerLeaderboardTier = function(args) {
 
 	var nextTier = -1;
 	if (!isPlayerBannedInternal(currentPlayerId)) {
-		var rankData = getPlayerRankInternal(args);
+		var data = server.GetTitleInternalData({
+			"Keys" : [ "eventLeaderboardTutorial" ]
+		});
 
-		nextTier = (rankData != null && rankData != undefined)
-			? calculateNextTier(rankData.rank, rankData.size)
-			: 0;
+		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
-		result.value = updatePlayerTierData(null, {'tier': nextTier}, args.leaderboardName);
+		if (tutorialLeaderboardData
+			&& tutorialLeaderboardData.leaderboardName
+			&& tutorialLeaderboardData === args.leaderboardName
+		) {
+			nextTier = 0;
+		} else {
+			var rankData = getPlayerRankInternal(args);
+			nextTier = (rankData != null && rankData != undefined)
+				? calculateNextTier(rankData.rank, rankData.size)
+				: 0;
+		}
 	}
 
-	updatePlayerTierData(null, {'tier': nextTier}, args.leaderboardName);
+	result.value = updatePlayerTierData(null, {'tier': nextTier}, args.leaderboardName);
 
 	updatePlayerProfileInternal(currentPlayerId,
 		{ 'leaderboardTier' : nextTier }
