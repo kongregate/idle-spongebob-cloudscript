@@ -433,7 +433,7 @@ handlers.updatePlayerStatistics = function (args) {
 					&& tutorialLeaderboardData.leaderboardName === leaderboardName
 				) {
 					var entries = {};
-					entries[leaderboardName] = buildEventTutorialLeaderboardEntries(
+					entries["tutorialLeaderboard" /*leaderboardName*/] = buildEventTutorialLeaderboardEntries(
 						getPlayerLeaderboardId(),
 						value,
 						tutorialLeaderboardData
@@ -519,7 +519,7 @@ handlers.getPlayerLeaderboard = function (args) {
 	) {
 		var readOnlyData = server.GetUserInternalData({
 			"PlayFabId": currentPlayerId,
-			"Keys": [ args.leaderboardName ]
+			"Keys": [ "tutorialLeaderboard" ] //args.leaderboardName ]
 		});
 
 		log.info(readOnlyData.Data);
