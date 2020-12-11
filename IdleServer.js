@@ -432,8 +432,7 @@ handlers.updatePlayerStatistics = function (args) {
 					&& tutorialLeaderboardData.leaderboardName
 					&& tutorialLeaderboardData.leaderboardName === leaderboardName
 				) {
-					var entries = {};
-					entries["tutorialLeaderboard" /*leaderboardName*/] = buildEventTutorialLeaderboardEntries(
+					var entries = buildEventTutorialLeaderboardEntries(
 						getPlayerLeaderboardId(),
 						value,
 						tutorialLeaderboardData
@@ -441,9 +440,12 @@ handlers.updatePlayerStatistics = function (args) {
 
 					logData.push({'Data': entries});
 
+					var data = {};
+					data[leaderboardName] = JSON.stringify(entries);
+
 					server.UpdateUserInternalData({
 						"PlayFabId": currentPlayerId,
-						"Data" : entries
+						"Data" : data
 					});
 				} else {
 					var updateType = args.statistics[i]["AggregationMethod"];
@@ -524,7 +526,7 @@ handlers.getPlayerLeaderboard = function (args) {
 
 		log.info(readOnlyData.Data);
 
-		var entries = readOnlyData.Data[args.leaderboardName].Value
+		var entries = JSON.parse(readOnlyData.Data[args.leaderboardName].Value);
 		result.value = [];
 		for(var idx = 0; idx < entries.length; idx++) {
 			result.value.push(entries[idx].player);
