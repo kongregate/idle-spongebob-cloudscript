@@ -519,18 +519,19 @@ handlers.getPlayerLeaderboard = function (args) {
 		&& tutorialLeaderboardData.leaderboardName
 		&& tutorialLeaderboardData.leaderboardName == args.leaderboardName
 	) {
+		result.value = [];
+
 		var readOnlyData = server.GetUserInternalData({
 			"PlayFabId": currentPlayerId,
 			"Keys": [ args.leaderboardName ]
 		});
 
-		log.info(readOnlyData.Data);
-
-		var entries = JSON.parse(readOnlyData.Data[args.leaderboardName].Value);
-		result.value = [];
-		for(var idx = 0; idx < entries.length; idx++) {
-			result.value.push(entries[idx].player);
-			result.value.push(entries[idx].value);
+		if (readOnlyData.Data[args.leaderboardName]) {
+			var entries = JSON.parse(readOnlyData.Data[args.leaderboardName].Value);
+			for(var idx = 0; idx < entries.length; idx++) {
+				result.value.push(entries[idx].player);
+				result.value.push(entries[idx].value);
+			}
 		}
 
 		return result;
