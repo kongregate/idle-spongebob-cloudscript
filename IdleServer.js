@@ -273,19 +273,22 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 		// entries = entries.join(tutorialConfig.entries);
 
 		for(var idx = 0; idx < tutorialConfig.entries.length; idx++) {
+			log.info({"idx" : idx});
 			var entry = tutorialConfig.entries[idx];
 
 			var entryIdx = 0;
 			for(entryIdx; entryIdx < entries.length; entryIdx++) {
+				log.info({"entryIdx" : entryIdx});
 				if (entries[entryIdx].amount >= entry.amount) {
-					log.ing({"entryIdx" : entryIdx});
+					log.info({"entryIdx" : true});
 					entries.splice(entryidx, 0, entry);
 					break;
 				}
 			}
 
 			if (entryIdx > entries.length) {
-				log.ing({"entryIdx" : entryIdx});
+				log.info({"entryIdx" : entryIdx});
+				log.info({"entryIdx" : true});
 				entries.push(entry);
 			}
 		}
