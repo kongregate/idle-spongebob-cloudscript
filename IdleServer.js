@@ -265,10 +265,12 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 		}
 	];
 
-	if (tutorialConfig && tutorialConfig.entries) {
-		// entries = entries.join(tutorialConfig.entries);
+	log.info({"entries":entries});
 
-		log.info(entries);
+	if (tutorialConfig && tutorialConfig.entries) {
+		log.info({"tutorialEntries":tutorialConfig.entries});
+
+		// entries = entries.join(tutorialConfig.entries);
 
 		for(var idx = 0; idx < tutorialConfig.entries; idx++) {
 			var entry = tutorialConfig.entries[idx];
@@ -294,7 +296,7 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 		// 		: -1
 		// );
 
-		log.info(entries);
+		// log.info(entries);
 	}
 
 	return entries;
@@ -442,17 +444,17 @@ handlers.updatePlayerStatistics = function (args) {
 
 		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
-		logData.push( {'args' : args });
-		logData.push( {'tutorialLeaderboardData' : tutorialLeaderboardData });
+		log.info( {'args' : args });
+		log.info( {'tutorialLeaderboardData' : tutorialLeaderboardData });
 
 		if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 			for (var i = 0; i < args.statistics.length; i++) {
 				var leaderboardName = args.statistics[i]["StatisticName"];
 				var value = args.statistics[i]["Value"];
 
-				logData.push( {'leaderboardName' : leaderboardName });
-				logData.push( {'tutorialLeaderboardName' : tutorialLeaderboardData.leaderboardName });
-				logData.push( {'isTutorial' : (tutorialLeaderboardData.leaderboardName === leaderboardName) });
+				log.info( {'leaderboardName' : leaderboardName });
+				log.info( {'tutorialLeaderboardName' : tutorialLeaderboardData.leaderboardName });
+				log.info( {'isTutorial' : (tutorialLeaderboardData.leaderboardName === leaderboardName) });
 
 				if (tutorialLeaderboardData
 					&& tutorialLeaderboardData.leaderboardName
@@ -465,7 +467,7 @@ handlers.updatePlayerStatistics = function (args) {
 						tutorialLeaderboardData
 					);
 
-					logData.push( {'entries' : entries });
+					log.info( {'entries' : entries });
 
 					server.UpdateUserReadOnlyData({
 						"Data" : entries
