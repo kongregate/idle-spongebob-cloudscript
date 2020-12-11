@@ -261,17 +261,24 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 	];
 
 	if (tutorialConfig && tutorialConfig.entries) {
+		/*for(var idx = 0; idx < tutorialConfig.entries.length; idx++) {
+			var subIdx = 0;
+			for(vsubIdx; subIdx < entries.length; subIdx) {
+
+			}
+		}
 		entries = entries.join(tutorialConfig.entries);
+		*/
 
 		log.info(entries);
 
-		entries.sort((x, y) => {
-			return (x.amount === y.amount)
+		entries.sort((x, y) =>
+			(x.amount === y.amount)
 				? 0
 				: (x.amount < y.amount)
 				? 1
-				: -1;
-		});
+				: -1
+		);
 
 		log.info(entries);
 	}
