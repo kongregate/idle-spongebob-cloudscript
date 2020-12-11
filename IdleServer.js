@@ -261,14 +261,7 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 	];
 
 	if (tutorialConfig && tutorialConfig.entries) {
-		/*for(var idx = 0; idx < tutorialConfig.entries.length; idx++) {
-			var subIdx = 0;
-			for(vsubIdx; subIdx < entries.length; subIdx) {
-
-			}
-		}
 		entries = entries.join(tutorialConfig.entries);
-		*/
 
 		log.info(entries);
 
