@@ -272,7 +272,7 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 
 		// entries = entries.join(tutorialConfig.entries);
 
-		for(var idx = 0; idx < tutorialConfig.entries; idx++) {
+		for(var idx = 0; idx < tutorialConfig.entries.length; idx++) {
 			var entry = tutorialConfig.entries[idx];
 
 			var entryIdx = 0;
