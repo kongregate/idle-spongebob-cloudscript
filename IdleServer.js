@@ -253,11 +253,6 @@ handlers.unbanUser = function (args) {
 }
 
 var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, tutorialConfig) {
-	// var playerEntry = {
-	// 	"player" : playerLeaderboardId,
-	// 	"amount" : amout
-	// };
-
 	var entries = [
 		{
 			"player" : playerLeaderboardId,
@@ -265,47 +260,23 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 		}
 	];
 
-	log.info({"playerEntry":entries});
-
 	if (tutorialConfig && tutorialConfig.entries) {
-		log.info({"tutorialEntries":tutorialConfig.entries});
-
-		// entries = entries.join(tutorialConfig.entries);
-
 		for(var idx = 0; idx < tutorialConfig.entries.length; idx++) {
-			log.info({"idx" : idx});
 			var entry = tutorialConfig.entries[idx];
 
 			var entryIdx = 0;
 			for(entryIdx; entryIdx < entries.length; entryIdx++) {
-				log.info({"entryIdx" : entryIdx});
 				if (entries[entryIdx].amount >= entry.amount) {
-					log.info({"entryIdx" : true});
 					entries.splice(entryidx, 0, entry);
 					break;
 				}
-			}
-
-			log.info({"entryIdx" : entryIdx});
+			};
 
 			if (entryIdx >= entries.length) {
-				log.info({"entryIdx" : true});
 				entries.push(entry);
 			}
 		}
-
-		// entries.sort((x, y) =>
-		// 	(x.amount === y.amount)
-		// 		? 0
-		// 		: (x.amount < y.amount)
-		// 		? 1
-		// 		: -1
-		// );
-
-		// log.info(entries);
 	}
-
-	log.info({"fullEntries":entries});
 
 	return entries;
 }
@@ -452,17 +423,10 @@ handlers.updatePlayerStatistics = function (args) {
 
 		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
-		log.info( {'args' : args });
-		log.info( {'tutorialLeaderboardData' : tutorialLeaderboardData });
-
 		if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 			for (var i = 0; i < args.statistics.length; i++) {
 				var leaderboardName = args.statistics[i]["StatisticName"];
 				var value = args.statistics[i]["Value"];
-
-				log.info( {'leaderboardName' : leaderboardName });
-				log.info( {'tutorialLeaderboardName' : tutorialLeaderboardData.leaderboardName });
-				log.info( {'isTutorial' : (tutorialLeaderboardData.leaderboardName === leaderboardName) });
 
 				if (tutorialLeaderboardData
 					&& tutorialLeaderboardData.leaderboardName
