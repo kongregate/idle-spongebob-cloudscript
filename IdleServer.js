@@ -789,4 +789,3 @@ var SendLogglyError = function (source, content) {
 
 	console.log(JSON.stringify(content));
 }
-
