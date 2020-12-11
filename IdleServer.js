@@ -412,8 +412,6 @@ var updatePlayerTierData = function(currentTierData, newTierData, context) {
 handlers.updatePlayerStatistics = function (args) {
 	var updates = -1;
 
-	var logData = [];
-
 	if (!isPlayerBannedInternal(currentPlayerId)) {
 		updates = 0;
 
@@ -438,8 +436,6 @@ handlers.updatePlayerStatistics = function (args) {
 						tutorialLeaderboardData
 					);
 
-					logData.push({'Data': entries});
-
 					var data = {};
 					data[leaderboardName] = JSON.stringify(entries);
 
@@ -458,7 +454,7 @@ handlers.updatePlayerStatistics = function (args) {
 		}
 	}
 
-	return { "value":updates, "log" : logData};
+	return { "value":updates };
 };
 
 var updatePlayerStatistic = function (leaderboardName, value, updateType, tierOverride) {
