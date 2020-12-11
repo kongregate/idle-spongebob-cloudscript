@@ -252,11 +252,11 @@ handlers.unbanUser = function (args) {
 	return updateResult;
 }
 
-var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, tutorialConfig) {
+var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, value, tutorialConfig) {
 	var entries = [
 		{
 			"player" : playerLeaderboardId,
-			"amount" : amout
+			"value" : value
 		}
 	];
 
@@ -266,7 +266,7 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 
 			var entryIdx = 0;
 			for(entryIdx; entryIdx < entries.length; entryIdx++) {
-				if (entries[entryIdx].amount >= entry.amount) {
+				if (entries[entryIdx].value >= entry.value) {
 					entries.splice(entryidx, 0, entry);
 					break;
 				}
