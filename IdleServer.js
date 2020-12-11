@@ -439,7 +439,7 @@ handlers.updatePlayerStatistics = function (args) {
 						tutorialLeaderboardData
 					);
 
-					log.info("entries", entries);
+					logData.push({'Data': entries});
 
 					server.UpdateUserReadOnlyData({
 						"PlayFabId": currentPlayerId,
