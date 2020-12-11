@@ -441,7 +441,7 @@ handlers.updatePlayerStatistics = function (args) {
 
 					logData.push({'Data': entries});
 
-					server.UpdateUserReadOnlyData({
+					server.UpdateUserInternalData({
 						"PlayFabId": currentPlayerId,
 						"Data" : entries
 					});
@@ -517,7 +517,7 @@ handlers.getPlayerLeaderboard = function (args) {
 		&& tutorialLeaderboardData.leaderboardName
 		&& tutorialLeaderboardData.leaderboardName == args.leaderboardName
 	) {
-		var readOnlyData = server.GetUserReadOnlyData({
+		var readOnlyData = server.GetUserInternalData({
 			"PlayFabId": currentPlayerId,
 			"Keys": [ args.leaderboardName ]
 		});
