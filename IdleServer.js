@@ -252,6 +252,37 @@ handlers.unbanUser = function (args) {
 	return updateResult;
 }
 
+var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, value, tutorialConfig) {
+	var entries = [
+		{
+			"player" : playerLeaderboardId,
+			"value" : value
+		}
+	];
+
+	if (tutorialConfig && tutorialConfig.entries) {
+		for(var idx = 0; idx < tutorialConfig.entries.length; idx++) {
+			var entry = tutorialConfig.entries[idx];
+
+			var entryIdx = 0;
+			for(entryIdx; entryIdx < entries.length; entryIdx++) {
+				if (entries[entryIdx].value >= entry.value) {
+					entries.splice(entryIdx, 0, entry);
+					break;
+				}
+			};
+
+			if (entryIdx >= entries.length) {
+				entries.push(entry);
+			}
+		}
+	}
+
+	entries = entries.reverse();
+
+	return entries;
+}
+
 var getTitleTierData = function() {
 	var result = null;
 
@@ -385,19 +416,47 @@ handlers.updatePlayerStatistics = function (args) {
 
 	if (!isPlayerBannedInternal(currentPlayerId)) {
 		updates = 0;
+
+		var data = server.GetTitleInternalData({
+			"Keys" : [ "eventLeaderboardTutorial" ]
+		});
+
+		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
+
 		if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 			for (var i = 0; i < args.statistics.length; i++) {
 				var leaderboardName = args.statistics[i]["StatisticName"];
 				var value = args.statistics[i]["Value"];
-				var updateType = args.statistics[i]["AggregationMethod"];
 
-				updatePlayerStatistic(leaderboardName, value, updateType);
+				if (tutorialLeaderboardData
+					&& tutorialLeaderboardData.leaderboardName
+					&& tutorialLeaderboardData.leaderboardName === leaderboardName
+				) {
+					var entries = buildEventTutorialLeaderboardEntries(
+						getPlayerLeaderboardId(),
+						value,
+						tutorialLeaderboardData
+					);
+
+					var data = {};
+					data[leaderboardName] = JSON.stringify(entries);
+
+					server.UpdateUserInternalData({
+						"PlayFabId": currentPlayerId,
+						"Data" : data
+					});
+				} else {
+					var updateType = args.statistics[i]["AggregationMethod"];
+
+					updatePlayerStatistic(leaderboardName, value, updateType);
+				}
+
 				updates++;
 			}
 		}
 	}
 
-	return { "value":updates};
+	return { "value":updates };
 };
 
 var updatePlayerStatistic = function (leaderboardName, value, updateType, tierOverride) {
@@ -447,6 +506,34 @@ handlers.getPlayerLeaderboard = function (args) {
 	var result = {
 		"value": { }
 	};
+
+	var data = server.GetTitleInternalData({
+		"Keys" : [ "eventLeaderboardTutorial" ]
+	});
+
+	var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
+
+	if (tutorialLeaderboardData
+		&& tutorialLeaderboardData.leaderboardName
+		&& tutorialLeaderboardData.leaderboardName == args.leaderboardName
+	) {
+		result.value = [];
+
+		var readOnlyData = server.GetUserInternalData({
+			"PlayFabId": currentPlayerId,
+			"Keys": [ args.leaderboardName ]
+		});
+
+		if (readOnlyData.Data[args.leaderboardName]) {
+			var entries = JSON.parse(readOnlyData.Data[args.leaderboardName].Value);
+			for(var idx = 0; idx < entries.length; idx++) {
+				result.value.push(entries[idx].player);
+				result.value.push(entries[idx].value);
+			}
+		}
+
+		return result;
+	}
 
 	var requestParams = {
 		"playerId": getPlayerLeaderboardId(),
@@ -623,16 +710,26 @@ handlers.updatePlayerLeaderboardTier = function(args) {
 
 	var nextTier = -1;
 	if (!isPlayerBannedInternal(currentPlayerId)) {
-		var rankData = getPlayerRankInternal(args);
+		var data = server.GetTitleInternalData({
+			"Keys" : [ "eventLeaderboardTutorial" ]
+		});
 
-		nextTier = (rankData != null && rankData != undefined)
-			? calculateNextTier(rankData.rank, rankData.size)
-			: 0;
+		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
-		result.value = updatePlayerTierData(null, {'tier': nextTier}, args.leaderboardName);
+		if (tutorialLeaderboardData
+			&& tutorialLeaderboardData.leaderboardName
+			&& tutorialLeaderboardData === args.leaderboardName
+		) {
+			nextTier = 0;
+		} else {
+			var rankData = getPlayerRankInternal(args);
+			nextTier = (rankData != null && rankData != undefined)
+				? calculateNextTier(rankData.rank, rankData.size)
+				: 0;
+		}
 	}
 
-	updatePlayerTierData(null, {'tier': nextTier}, args.leaderboardName);
+	result.value = updatePlayerTierData(null, {'tier': nextTier}, args.leaderboardName);
 
 	updatePlayerProfileInternal(currentPlayerId,
 		{ 'leaderboardTier' : nextTier }
@@ -690,4 +787,3 @@ var SendLogglyError = function (source, content) {
 
 	console.log(JSON.stringify(content));
 }
-
