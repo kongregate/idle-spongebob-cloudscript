@@ -278,12 +278,14 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 			var entryIdx = 0;
 			for(entryIdx; entryIdx < entries.length; entryIdx++) {
 				if (entries[entryIdx].amount >= entry.amount) {
+					log.ing({"entryIdx" : entryIdx});
 					entries.splice(entryidx, 0, entry);
 					break;
 				}
 			}
 
 			if (entryIdx > entries.length) {
+				log.ing({"entryIdx" : entryIdx});
 				entries.push(entry);
 			}
 		}
