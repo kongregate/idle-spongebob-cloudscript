@@ -265,7 +265,7 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 		}
 	];
 
-	log.info({"entries":entries});
+	log.info({"playerEntry":entries});
 
 	if (tutorialConfig && tutorialConfig.entries) {
 		log.info({"tutorialEntries":tutorialConfig.entries});
@@ -298,6 +298,8 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 
 		// log.info(entries);
 	}
+
+	log.info({"fullEntries":entries});
 
 	return entries;
 }
