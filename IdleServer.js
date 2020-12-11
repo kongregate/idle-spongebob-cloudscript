@@ -253,6 +253,11 @@ handlers.unbanUser = function (args) {
 }
 
 var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, tutorialConfig) {
+	// var playerEntry = {
+	// 	"player" : playerLeaderboardId,
+	// 	"amount" : amout
+	// };
+
 	var entries = [
 		{
 			"player" : playerLeaderboardId,
@@ -261,17 +266,33 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 	];
 
 	if (tutorialConfig && tutorialConfig.entries) {
-		entries = entries.join(tutorialConfig.entries);
+		// entries = entries.join(tutorialConfig.entries);
 
 		log.info(entries);
 
-		entries.sort((x, y) =>
-			(x.amount === y.amount)
-				? 0
-				: (x.amount < y.amount)
-				? 1
-				: -1
-		);
+		for(var idx = 0; idx < tutorialConfig.entries; idx++) {
+			var entry = tutorialConfig.entries[idx];
+
+			var entryIdx = 0;
+			for(entryIdx; entryIdx < entries.length; entryIdx++) {
+				if (entries[entryIdx].amount >= entry.amount) {
+					entries.splice(entryidx, 0, entry);
+					break;
+				}
+			}
+
+			if (entryIdx > entries.length) {
+				entries.push(entry);
+			}
+		}
+
+		// entries.sort((x, y) =>
+		// 	(x.amount === y.amount)
+		// 		? 0
+		// 		: (x.amount < y.amount)
+		// 		? 1
+		// 		: -1
+		// );
 
 		log.info(entries);
 	}
