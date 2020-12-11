@@ -443,8 +443,7 @@ handlers.updatePlayerStatistics = function (args) {
 
 					server.UpdateUserReadOnlyData({
 						"PlayFabId": currentPlayerId,
-						"Data" : entries,
-						"KeysToRemove" : keysToRemove
+						"Data" : entries
 					});
 				} else {
 					var updateType = args.statistics[i]["AggregationMethod"];
