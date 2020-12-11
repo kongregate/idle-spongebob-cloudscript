@@ -278,6 +278,8 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, value, 
 		}
 	}
 
+	entries = entries.reverse();
+
 	return entries;
 }
 
