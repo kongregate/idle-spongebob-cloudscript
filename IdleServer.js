@@ -439,7 +439,7 @@ handlers.updatePlayerStatistics = function (args) {
 						tutorialLeaderboardData
 					);
 
-					log.info( {'entries' : entries });
+					log.info("entries", entries);
 
 					server.UpdateUserReadOnlyData({
 						"PlayFabId": currentPlayerId,
@@ -521,6 +521,8 @@ handlers.getPlayerLeaderboard = function (args) {
 			"PlayFabId": currentPlayerId,
 			"Keys": [ args.leaderboardName ]
 		});
+
+		log.info(readOnlyData.Data);
 
 		var entries = readOnlyData.Data[args.leaderboardName].Value
 		result.value = [];
