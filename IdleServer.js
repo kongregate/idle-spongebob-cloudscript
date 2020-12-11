@@ -442,7 +442,9 @@ handlers.updatePlayerStatistics = function (args) {
 					log.info( {'entries' : entries });
 
 					server.UpdateUserReadOnlyData({
-						"Data" : entries
+						"PlayFabId": currentPlayerId,
+						"Data" : entries,
+						"KeysToRemove" : keysToRemove
 					});
 				} else {
 					var updateType = args.statistics[i]["AggregationMethod"];
