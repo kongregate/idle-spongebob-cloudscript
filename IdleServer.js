@@ -263,6 +263,8 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 	if (tutorialConfig && tutorialConfig.entries) {
 		entries = entries.join(tutorialConfig.entries);
 
+		log.info(entries);
+
 		entries.sort((x, y) => {
 			return (x.amount === y.amount)
 				? 0
@@ -270,6 +272,8 @@ var buildEventTutorialLeaderboardEntries = function(playerLeaderboardId, amout, 
 				? 1
 				: -1;
 		});
+
+		log.info(entries);
 	}
 
 	return entries;
@@ -434,7 +438,8 @@ handlers.updatePlayerStatistics = function (args) {
 					&& tutorialLeaderboardData.leaderboardName === leaderboardName
 				) {
 					var entries = {};
-					entries[leaderboardName] = buildEventTutorialLeaderboardEntries(getPlayerLeaderboardId(),
+					entries[leaderboardName] = buildEventTutorialLeaderboardEntries(
+						getPlayerLeaderboardId(),
 						value,
 						tutorialLeaderboardData
 					);
