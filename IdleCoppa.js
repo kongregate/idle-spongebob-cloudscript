@@ -1,34 +1,36 @@
 
 const COPPA = "coppa";
 
-handlers.setAndGetCoppaModel = function(args) {
+handlers.setCoppaModel = function(args) {
 	var result = {
         "success": false,
         "saved" : false
 	};
 
-    if (args.birthdayTimestamp == null
-        || args.birthdayTimestamp == undefined
-    ) {
-        return result;
-    }
+    // if (args.birthdayTimestamp == null
+    //     || args.birthdayTimestamp == undefined
+    // ) {
+    //     return result;
+    // }
 
-    result[COPPA] = {};
-    result[COPPA]["birthdayTimestamp"] = args.birthdayTimestamp;
+    result[COPPA] = {
+        "hasParentalConsent": false
+    };
+    // result[COPPA]["birthdayTimestamp"] = args.birthdayTimestamp;
 
-    var countryCode = null;
-    try {
-        var playerProfileResponse = server.GetPlayerProfile({
-            "PlayFabId" : currentPlayerId,
-            "ProfileConstraints" : args.constrains
-        });
+    // var countryCode = null;
+    // try {
+    //     var playerProfileResponse = server.GetPlayerProfile({
+    //         "PlayFabId" : currentPlayerId,
+    //         "ProfileConstraints" : args.constrains
+    //     });
 
-        countryCode = playerProfileResponse.PlayerProfile.Locations[0].CountryCode;
-        result[COPPA]["countryCode"] = countryCode;
-    } catch(e) {
-        result["error"] = evaluatePlayFabError(e);
-        return { "value" : result };
-    }
+    //     countryCode = playerProfileResponse.PlayerProfile.Locations[0].CountryCode;
+    //     result[COPPA]["countryCode"] = countryCode;
+    // } catch(e) {
+    //     result["error"] = evaluatePlayFabError(e);
+    //     return { "value" : result };
+    // }
 
     try {
         var data = {};
