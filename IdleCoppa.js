@@ -14,7 +14,7 @@ handlers.setCoppaModel = function(args) {
     // }
 
     result[COPPA] = {
-        "hasParentalConsent": false
+        "hasParentalConsent": (args.hasParentalConsent === true)
     };
     // result[COPPA]["birthdayTimestamp"] = args.birthdayTimestamp;
 
