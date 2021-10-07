@@ -1,11 +1,48 @@
 
+var getCheaterData = function(playerId, keysArray, location) {
+	var data = {
+		"PlayFabId": playerId,
+		"Keys": keysArray
+	};
+
+    if (location === CHEATER_DATA_READ_ONLY) {
+        return server.GetUserReadOnlyData(data);
+    } else if (location === CHEATER_DATA_INTERNAL) {
+		return server.GetUserInternalData(data);
+    }
+
+    return undefined;
+}
+
+var setCheaterData = function(playerId, updateData, keysToDeleteArray, location) {
+    var data = {};
+    data["PlayFabId"] = playerId;
+
+    if (updateData) {
+        data["Data"] = updateData;
+    }
+
+    if (keysToDeleteArray) {
+        data["KeysToRemove"] = keysToDeleteArray;
+    }
+
+    if (location === CHEATER_DATA_READ_ONLY) {
+        return server.UpdateUserReadOnlyData(data);
+    } else if (location === CHEATER_DATA_INTERNAL) {
+		return server.UpdateUserInternalData(data);
+    }
+
+    return undefined;
+}
+
 var isPlayerBannedInternal = function() {
 	var result = false;
 
-	var data = server.GetUserReadOnlyData({
-		"PlayFabId": currentPlayerId,
-		"Keys": [ "isCheater"]
-	});
+	var data = getCheaterData(
+        currentPlayerId,
+		[ "isCheater"],
+        CHEATER_DATA_READ_ONLY
+	);
 
 	if (data.Data.hasOwnProperty("isCheater")) {
 		var flag = JSON.parse(data.Data.isCheater.Value);
@@ -81,12 +118,14 @@ var updateBanLog = function(banData) {
 }
 
 handlers.banUser = function (args) {
-	var readOnlyData = server.GetUserReadOnlyData({ "PlayFabId": currentPlayerId });
 	var data = {};
 	data["isCheater"] = true;
-	readOnlyData["Data"] = data;
 
-	var updateResult = server.UpdateUserReadOnlyData(readOnlyData);
+	var updateResult = setCheaterData(currentPlayerId,
+        data,
+        undefined,
+        CHEATER_DATA_READ_ONLY
+    );
 
 	var banData = { "ban": data["isCheater"] };
 
@@ -135,10 +174,11 @@ handlers.banUser = function (args) {
 handlers.unbanUser = function (args) {
 	var banData = { "ban": false };
 
-	var updateResult = server.UpdateUserReadOnlyData({
-		"PlayFabId": currentPlayerId,
-		"KeysToRemove" : ["isCheater"]
-	});
+	var updateResult = setCheaterData(currentPlayerId,
+        undefined,
+        ["isCheater"],
+        CHEATER_DATA_READ_ONLY
+    );
 
 	if (args != null
 		&& args != undefined

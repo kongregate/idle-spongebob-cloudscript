@@ -16,13 +16,16 @@ handlers.chatBanUser = function (args) {
 
 	if (args != null && args != undefined
 		&& args.duration != null && args.duration != undefined) {
-			var readOnlyData = server.GetUserReadOnlyData({ "PlayFabId": currentPlayerId });
 			var data = {};
 			var banTimeStamp = getServerTimeInternal() + args.duration;
 			data[CHAT_BAN_TIMESTAMP_KEY] = banTimeStamp;
-			readOnlyData["Data"] = data;
 
-			updateResult = server.UpdateUserReadOnlyData(readOnlyData);
+			updateResult = setCheaterData(
+				currentPlayerId,
+				data,
+				undefined,
+				CHEATER_DATA_READ_ONLY
+			);
 
 			var banData = { "chatBan": data[CHAT_BAN_TIMESTAMP_KEY] };
 
@@ -36,10 +39,12 @@ handlers.chatBanUser = function (args) {
 handlers.chatUnbanUser = function (args) {
 	var banData = { "chatBan": false };
 
-	var updateResult = server.UpdateUserReadOnlyData({
-		"PlayFabId": currentPlayerId,
-		"KeysToRemove" : [CHAT_BAN_TIMESTAMP_KEY]
-	});
+	var updateResult = setCheaterData(
+		currentPlayerId,
+		undefined,
+		[CHAT_BAN_TIMESTAMP_KEY],
+		CHEATER_DATA_READ_ONLY
+	);
 
 	updateBanLog(banData);
 
