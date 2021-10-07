@@ -5,16 +5,22 @@ var getCheaterData = function(playerId, keysArray) {
 		"Keys": keysArray
 	};
 
-    if (CHEATER_DATA_BEHAVIOR === CHEATER_DATA_READ_ONLY) {
-        return server.GetUserReadOnlyData(data);
-    } else if (CHEATER_DATA_BEHAVIOR === CHEATER_DATA_INTERNAL) {
+    if (CHEATER_DATA_BEHAVIOR === CHEATER_DATA_MIGRATION) {
+        var readOnlyData = server.GetUserReadOnlyData(data);
+		if (readOnlyData
+			&& readOnlyData.Data
+			&& Object.keys(readOnlyData).length > 0
+		) {
+			return readOnlyData;
+		}
+
 		return server.GetUserInternalData(data);
     }
 
-    return undefined;
+	return server.GetUserInternalData(data);
 }
 
-var setCheaterData = function(playerId, updateData, keysToDeleteArray) {
+var setCheaterData = function(playerId, updateData, keysToDeleteArray, behaviorOverride) {
     var data = {};
     data["PlayFabId"] = playerId;
 
@@ -26,13 +32,16 @@ var setCheaterData = function(playerId, updateData, keysToDeleteArray) {
         data["KeysToRemove"] = keysToDeleteArray;
     }
 
-    if (CHEATER_DATA_BEHAVIOR === CHEATER_DATA_READ_ONLY) {
+	var behavior = (behaviorOverride)
+		? behaviorOverride
+		: CHEATER_DATA_BEHAVIOR;
+
+    if (behavior === CHEATER_DATA_MIGRATION) {
+		server.UpdateUserInternalData(data);
 		return server.UpdateUserReadOnlyData(data);
-    } else if (location === CHEATER_DATA_INTERNAL) {
-		return server.UpdateUserInternalData(data);
     }
 
-    return undefined;
+	return server.UpdateUserInternalData(data);
 }
 
 var isPlayerBannedInternal = function() {
@@ -116,13 +125,14 @@ var updateBanLog = function(banData) {
 	});
 }
 
-var banUserInternally = function (args) {
+var banUserInternally = function (args, behaviorOverride) {
 	var data = {};
 	data[IS_CHEATER] = true;
 
 	var updateResult = setCheaterData(currentPlayerId,
         data,
-        undefined
+        undefined,
+		behaviorOverride
     );
 
 	var banData = { "ban": data[IS_CHEATER] };
@@ -168,11 +178,16 @@ var banUserInternally = function (args) {
 
 	return updateResult;
 }
-// only to be used by admin tool
-handlers.banUser = banUserInternally;
+// only to be used by 1.103 and older devices
+// and admin tool
+handlers.banUser = function(args) {
+	return banUserInternally(args, CHEATER_DATA_MIGRATION);
+}
 
 // new client api to trigger auto banning
-handlers.recordTimestamp = banUserInternally;
+handlers.recordTimestamp = function(args) {
+	return banUserInternally(args);
+}
 
 handlers.unbanUser = function (args) {
 	var banData = { "ban": false };
