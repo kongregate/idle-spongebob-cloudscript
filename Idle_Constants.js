@@ -25,6 +25,5 @@ const IS_CHEATER = 'isCheater';
 const CHAT_BAN_TIMESTAMP_KEY = "chatBanEndTimeStamp";
 
 const CHEATER_DATA_READ_ONLY = "CheaterReadOnly";
-const CHEATER_DATA_READ_ONLY_AND_INTERNAL = "CheaterReadOnlyAndInternal";
 const CHEATER_DATA_INTERNAL = "CheaterInternal";
 const CHEATER_DATA_BEHAVIOR = CHEATER_DATA_READ_ONLY;
