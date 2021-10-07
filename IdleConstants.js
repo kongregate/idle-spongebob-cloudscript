@@ -20,3 +20,6 @@ const SERVER_CONFIG = {
 };
 
 const LOGGLY_TOKEN = '00cced27-e9fd-49e2-b332-87d611e71937';
+
+const CHEATER_DATA_READ_ONLY = "CheaterReadOnly";
+const CHEATER_DATA_INTERNAL = "CheaterInternal";
