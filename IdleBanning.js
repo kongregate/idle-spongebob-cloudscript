@@ -40,10 +40,10 @@ var isPlayerBannedInternal = function() {
 
 	var data = getCheaterData(
         currentPlayerId,
-		[ "isCheater"]
+		[ IS_CHEATER ]
 	);
 
-	if (data.Data.hasOwnProperty("isCheater")) {
+	if (data.Data.hasOwnProperty(IS_CHEATER)) {
 		var flag = JSON.parse(data.Data.isCheater.Value);
 		result = (flag === true);
 	}
@@ -118,14 +118,14 @@ var updateBanLog = function(banData) {
 
 var banUserInternally = function (args) {
 	var data = {};
-	data["isCheater"] = true;
+	data[IS_CHEATER] = true;
 
 	var updateResult = setCheaterData(currentPlayerId,
         data,
         undefined
     );
 
-	var banData = { "ban": data["isCheater"] };
+	var banData = { "ban": data[IS_CHEATER] };
 
 	if (args != null
 		&& args != undefined
@@ -204,4 +204,61 @@ handlers.unbanUser = function (args) {
 	updateBanLog(banData);
 
 	return updateResult;
+}
+
+// api to internally migrate all players cheater
+// data from readOnly to Internal
+handlers.migrateCheaterDataKeys = function(args) {
+	var result = { 'success' : false };
+
+	if (args
+		&& args.playerId
+	) {
+		var cheaterReadOnlyKeys = [ IS_CHEATER, CHAT_BAN_TIMESTAMP_KEY ];
+
+		var readOnly = server.GetUserReadOnlyData({
+			"PlayFabId": args.playerId,
+			"Keys": cheaterReadOnlyKeys
+		});
+
+		if (readOnly && readOnly.Data) {
+			var readOnlyKeysToDelete = undefined;
+			var internalDataToUpdate = undefined;
+
+			for(var idx = 0; idx < cheaterReadOnlyKeys.length; idx++) {
+				var key = cheaterReadOnlyKeys[idx];
+
+				if (readOnly.Data.hasOwnProperty(key)) {
+					if (!internalDataToUpdate) {
+						internalDataToUpdate = {};
+					}
+
+					if (!readOnlyKeysToDelete) {
+						readOnlyKeysToDelete = [];
+					}
+
+					internalDataToUpdate[key] = readOnly.Data[key];
+					readOnlyKeysToDelete.push(key);
+				}
+			}
+
+			if (readOnlyKeysToDelete) {
+				server.GetUserReadOnlyData({
+					"PlayFabId": args.playerId,
+					"KeysToRemove": cheaterReadOnlyKeys
+				});
+			}
+
+			if (internalDataToUpdate) {
+				server.UpdateUserInternalData({
+					"PlayFabId": args.playerId,
+					"Data": internalDataToUpdate
+				});
+			}
+		}
+
+		result.success = true;
+	}
+
+	return result;
 }

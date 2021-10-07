@@ -9,8 +9,6 @@
 // *** ChatBan Handlers ***
 // ****************************
 
-const CHAT_BAN_TIMESTAMP_KEY = "chatBanEndTimeStamp";
-
 handlers.chatBanUser = function (args) {
 	var updateResult = null;
 
