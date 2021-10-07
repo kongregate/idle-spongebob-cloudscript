@@ -1,20 +1,20 @@
 
-var getCheaterData = function(playerId, keysArray, location) {
+var getCheaterData = function(playerId, keysArray) {
 	var data = {
 		"PlayFabId": playerId,
 		"Keys": keysArray
 	};
 
-    if (location === CHEATER_DATA_READ_ONLY) {
+    if (CHEATER_DATA_BEHAVIOR === CHEATER_DATA_READ_ONLY) {
         return server.GetUserReadOnlyData(data);
-    } else if (location === CHEATER_DATA_INTERNAL) {
+    } else if (CHEATER_DATA_BEHAVIOR === CHEATER_DATA_INTERNAL) {
 		return server.GetUserInternalData(data);
     }
 
     return undefined;
 }
 
-var setCheaterData = function(playerId, updateData, keysToDeleteArray, location) {
+var setCheaterData = function(playerId, updateData, keysToDeleteArray) {
     var data = {};
     data["PlayFabId"] = playerId;
 
@@ -26,8 +26,8 @@ var setCheaterData = function(playerId, updateData, keysToDeleteArray, location)
         data["KeysToRemove"] = keysToDeleteArray;
     }
 
-    if (location === CHEATER_DATA_READ_ONLY) {
-        return server.UpdateUserReadOnlyData(data);
+    if (CHEATER_DATA_BEHAVIOR === CHEATER_DATA_READ_ONLY) {
+		return server.UpdateUserReadOnlyData(data);
     } else if (location === CHEATER_DATA_INTERNAL) {
 		return server.UpdateUserInternalData(data);
     }
@@ -40,8 +40,7 @@ var isPlayerBannedInternal = function() {
 
 	var data = getCheaterData(
         currentPlayerId,
-		[ "isCheater"],
-        CHEATER_DATA_READ_ONLY
+		[ "isCheater"]
 	);
 
 	if (data.Data.hasOwnProperty("isCheater")) {
@@ -117,14 +116,13 @@ var updateBanLog = function(banData) {
 	});
 }
 
-handlers.banUser = function (args) {
+var banUserInternally = function (args) {
 	var data = {};
 	data["isCheater"] = true;
 
 	var updateResult = setCheaterData(currentPlayerId,
         data,
-        undefined,
-        CHEATER_DATA_READ_ONLY
+        undefined
     );
 
 	var banData = { "ban": data["isCheater"] };
@@ -170,14 +168,18 @@ handlers.banUser = function (args) {
 
 	return updateResult;
 }
+// only to be used by admin tool
+handlers.banUser = banUserInternally;
+
+// new client api to trigger auto banning
+handlers.recordTimestamp = banUserInternally;
 
 handlers.unbanUser = function (args) {
 	var banData = { "ban": false };
 
 	var updateResult = setCheaterData(currentPlayerId,
         undefined,
-        ["isCheater"],
-        CHEATER_DATA_READ_ONLY
+        ["isCheater"]
     );
 
 	if (args != null

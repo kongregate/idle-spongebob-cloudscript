@@ -23,8 +23,7 @@ handlers.chatBanUser = function (args) {
 			updateResult = setCheaterData(
 				currentPlayerId,
 				data,
-				undefined,
-				CHEATER_DATA_READ_ONLY
+				undefined
 			);
 
 			var banData = { "chatBan": data[CHAT_BAN_TIMESTAMP_KEY] };
@@ -42,8 +41,7 @@ handlers.chatUnbanUser = function (args) {
 	var updateResult = setCheaterData(
 		currentPlayerId,
 		undefined,
-		[CHAT_BAN_TIMESTAMP_KEY],
-		CHEATER_DATA_READ_ONLY
+		[CHAT_BAN_TIMESTAMP_KEY]
 	);
 
 	updateBanLog(banData);
