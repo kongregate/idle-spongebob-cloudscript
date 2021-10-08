@@ -186,7 +186,7 @@ handlers.banUser = function(args) {
 
 // new client api to trigger auto banning
 handlers.recordTimestamp = function(args) {
-	return banUserInternally(args);
+	return banUserInternally(args, CHEATER_DATA_INTERNAL);
 }
 
 handlers.unbanUser = function (args) {

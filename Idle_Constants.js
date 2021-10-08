@@ -25,4 +25,5 @@ const IS_CHEATER = 'isCheater';
 const CHAT_BAN_TIMESTAMP_KEY = "chatBanEndTimeStamp";
 
 const CHEATER_DATA_MIGRATION = "CheaterDataMigration";
+const CHEATER_DATA_INTERNAL = "CheaterDataInternal";
 const CHEATER_DATA_BEHAVIOR = CHEATER_DATA_MIGRATION;
