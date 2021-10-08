@@ -5,17 +5,13 @@ var getCheaterData = function(playerId, keysArray) {
 		"Keys": keysArray
 	};
 
-    if (CHEATER_DATA_BEHAVIOR === CHEATER_DATA_MIGRATION) {
-        var readOnlyData = server.GetUserReadOnlyData(data);
-		if (readOnlyData
-			&& readOnlyData.Data
-			&& Object.keys(readOnlyData).length > 0
-		) {
-			return readOnlyData;
-		}
-
-		return server.GetUserInternalData(data);
-    }
+    var readOnlyData = server.GetUserReadOnlyData(data);
+	if (readOnlyData
+		&& readOnlyData.Data
+		&& Object.keys(readOnlyData).length > 0
+	) {
+		return readOnlyData;
+	}
 
 	return server.GetUserInternalData(data);
 }
