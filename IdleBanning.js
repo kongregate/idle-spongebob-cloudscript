@@ -223,12 +223,13 @@ handlers.unbanUser = function (args) {
 
 // api to internally migrate all players cheater
 // data from readOnly to Internal
-handlers.migrateCheaterDataKeys = function(args) {
+handlers.cheaterMigrationCopyReadOnlyDataKeysIntoInternalData = function(args) {
 	var result = { 'success' : false };
 
 	if (args
 		&& args.playerId
 	) {
+		result.success = true;
 		var cheaterReadOnlyKeys = [ IS_CHEATER, CHAT_BAN_TIMESTAMP_KEY ];
 
 		var readOnly = server.GetUserReadOnlyData({
@@ -236,41 +237,34 @@ handlers.migrateCheaterDataKeys = function(args) {
 			"Keys": cheaterReadOnlyKeys
 		});
 
-		if (readOnly && readOnly.Data) {
-			var readOnlyKeysToDelete = undefined;
-			var internalDataToUpdate = undefined;
-
-			for(var idx = 0; idx < cheaterReadOnlyKeys.length; idx++) {
-				var key = cheaterReadOnlyKeys[idx];
-
-				if (readOnly.Data.hasOwnProperty(key)) {
-					if (!internalDataToUpdate) {
-						internalDataToUpdate = {};
-					}
-
-					if (!readOnlyKeysToDelete) {
-						readOnlyKeysToDelete = [];
-					}
-
-					internalDataToUpdate[key] = readOnly.Data[key];
-					readOnlyKeysToDelete.push(key);
-				}
-			}
-
-			if (readOnlyKeysToDelete) {
-				server.GetUserReadOnlyData({
-					"PlayFabId": args.playerId,
-					"KeysToRemove": cheaterReadOnlyKeys
-				});
-			}
-
-			if (internalDataToUpdate) {
-				server.UpdateUserInternalData({
-					"PlayFabId": args.playerId,
-					"Data": internalDataToUpdate
-				});
-			}
+		if (readOnly
+			&& readOnly.Data
+			&& Object.keys(readOnly.Data).length > 0
+		) {
+			result['result'] = server.UpdateUserInternalData({
+				"PlayFabId": args.playerId,
+				"Data": readOnly.Data
+			});
 		}
+
+		return result;
+	}
+
+	return result;
+}
+
+// api to delete cheater readOnly
+// data
+handlers.cheaterMigrationRemoveReadOnlyDataKeys = function(args) {
+	var result = { 'success' : false };
+
+	if (args
+		&& args.playerId
+	) {
+		server.UpdateUserReadOnlyData({
+			"PlayFabId": args.playerId,
+			"KeysToRemove": [ IS_CHEATER, CHAT_BAN_TIMESTAMP_KEY ]
+		});
 
 		result.success = true;
 	}
