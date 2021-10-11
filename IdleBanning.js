@@ -56,6 +56,7 @@ var isPlayerBannedInternal = function() {
 	return result;
 }
 handlers.isPlayerBanned = isPlayerBannedInternal;
+
 handlers.hasRecordTimestamp = function(args) {
 	var result = {
 		'success' : true,
