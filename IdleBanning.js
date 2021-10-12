@@ -8,7 +8,7 @@ var getCheaterData = function(playerId, keysArray) {
     var readOnlyData = server.GetUserReadOnlyData(data);
 	if (readOnlyData
 		&& readOnlyData.Data
-		&& Object.keys(readOnlyData).length > 0
+		&& Object.keys(readOnlyData.Data).length
 	) {
 		return readOnlyData;
 	}
@@ -56,6 +56,15 @@ var isPlayerBannedInternal = function() {
 	return result;
 }
 handlers.isPlayerBanned = isPlayerBannedInternal;
+
+handlers.hasRecordTimestamp = function(args) {
+	var result = {
+		'success' : true,
+		'hasData' : isPlayerBannedInternal()
+	};
+
+	return { "value" : result };
+}
 
 var getPlayerBanLog = function() {
 	var result = null;
