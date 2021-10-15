@@ -39,6 +39,8 @@ handlers.getServerTime = getServerTimeInternal;
 var convertLeaderboardNameToCheaters = function(leaderboardName) {
 	var insertIndex = leaderboardName.indexOf(TIER_LEADERBOARD_SUFFIX);
 
+	log.debug(leaderboardName);
+
 	var cheaterLeaderboard =  (insertIndex < 0)
 		? leaderboardName + CHEATER_SUFFIX
 		: leaderboardName.splice(0, insertIndex) + CHEATER_SUFFIX + leaderboardName.splice(insertIndex);
