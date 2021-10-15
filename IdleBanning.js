@@ -151,6 +151,7 @@ var banUserInternally = function (args, behaviorOverride) {
 		&& args.leaderboardName.trim()
 	) {
 		var playerTier = getPlayerTierIndex(true);
+		var playerRedisKey = getPlayerLeaderboardId();
 
 		var requestParams = {};
 
@@ -158,43 +159,71 @@ var banUserInternally = function (args, behaviorOverride) {
 		requestParams['key'] = TITLE_ID_GLOBAL_SUFFIX
 			+ args.leaderboardName;
 
-		requestParams['key'] += '_1';
+		requestParams['key'] += GLOBAL_LEADERBOARD_BUCKET;
 
 		result['key'] = requestParams['key'];
 
 		var requestUrl = getUWSServer() + "Cache/ZRevrange";
 		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-		result['globalScore'] = JSON.parse(rawResponse);
+		var globalLeaderboard = JSON.parse(rawResponse);
+		result['globalLeaderboard'] = globalLeaderboard;
 
-		// NOTE : we only reset tier if there is leaderboard specified.
-		// This is due to the client (v35) auto banning not working correctly
-		// var playerTier = getPlayerTierIndex();
+		var playersToRemove = [];
 
-		// var playerRedisKey = getPlayerLeaderboardId();
+		// check if cheater has kong login
+		var playerIdx = globalLeaderboard.indexOf(playerRedisKey);
+		if (playerIdx >= 0) {
+			playersToRemove.push(playerRedisKey);
+			score = globalLeaderboard[playerIdx + 1];
+		}
 
-		// sendUwsUpdateLeaderboardRequest(
-		// 	playerRedisKey,
-		// 	args.leaderboardName,
-		// 	0,
-		// 	'Last',
-		// 	playerTier
-		// );
+		// check if cheater has score pre-kong
+		playerIdx = globalLeaderboard.indexOf(currentPlayerId);
+		if (playerIdx >= 0) {
+			playersToRemove.push(playerRedisKey);
+			var subScore = globalLeaderboard[playerIdx + 1];
+			if (subScore > score) {
+				score = subScore;
+			}
+		}
 
-		// var playerRedisKeys = playerRedisKey.split('|');
-		// if (playerRedisKeys.length > 1) {
-		// 	sendUwsUpdateLeaderboardRequest(
-		// 		playerRedisKeys[0],
-		// 		args.leaderboardName,
-		// 		0,
-		// 		'Last',
-		// 		playerTier
-		// 	);
-		// }
+		// reset existing scores
+		for(var idx = 0; playersToRemove.length; idx++) {
+			sendUwsUpdateLeaderboardRequest(
+				playersToRemove[idx],
+				args.leaderboardName,
+				0,
+				'Last',
+				playerTier,
+				true
+			);
+		}
 
-		// updatePlayerTierData(null, {'tier': -1}, "banUser:"+args.leaderboardName);
+		// clear tier
+		updatePlayerTierData(null, {'tier': -1}, "banUser:"+args.leaderboardName);
 
-		// banData['tier'] = playerTier;
-		// banData['leaderbord'] = args.leaderboardName;
+		// write to leaderboard with player
+		// flagged as cheater
+		sendUwsUpdateLeaderboardRequest(
+			playerRedisKey,
+			args.leaderboardName,
+			0,
+			score
+		);
+
+		var leaderboard = (playerTier > 0)
+			? args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTier
+			: args.leaderboardName;
+
+		banData['tier'] = playerTier;
+		banData['eventLeaderbord'] = args.leaderboardName;
+		banData['tierLeaderbord'] = leaderboard;
+		banData['globalLeaderbord'] = TITLE_ID_GLOBAL_SUFFIX
+			+ leaderboard
+			+ GLOBAL_LEADERBOARD_BUCKET;
+		banData['tierCheaterLeaderbord'] = convertLeaderboardNameToCheaters(leaderboard);
+		banData['globalCheaterLeaderbord'] = convertLeaderboardNameToCheaters(TITLE_ID_GLOBAL_SUFFIX + leaderboard)
+			+ GLOBAL_LEADERBOARD_BUCKET;
 	}
 
 	updateBanLog(banData);

@@ -319,7 +319,13 @@ var updatePlayerStatistic = function (leaderboardName, value, updateType, tierOv
 	);
 }
 
-var sendUwsUpdateLeaderboardRequest = function(playerRedisKey, leaderboardName, value, updateType, tierOverride) {
+var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
+	leaderboardName,
+	value,
+	updateType,
+	tierOverride,
+	doNotCheckCheater
+) {
 	var requestParams = {
 		"playerId": playerRedisKey,
 		"value": value,
@@ -345,9 +351,11 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey, leaderboardName, 
 		}
 	}
 
-	var isCheaer = isPlayerBannedInternal();
-	if (isCheaer) {
-		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
+	if (doNotCheckCheater !== true) {
+		var isCheaer = isPlayerBannedInternal();
+		if (isCheaer) {
+			requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
+		}
 	}
 
 	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");

@@ -7,6 +7,7 @@ const TITLE_ID_TOP_TIER_SUFFIX = '_TopTier';
 const TITLE_ID_GLOBAL_SUFFIX = '_Global';
 const CHEATER_SUFFIX = "_Cheater";
 const TIER_LEADERBOARD_SUFFIX = '_Tier';
+const GLOBAL_LEADERBOARD_BUCKET = '_1';
 
 const SERVER_CONFIG = {
         leaderboardServers: {
