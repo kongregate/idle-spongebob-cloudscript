@@ -38,16 +38,9 @@ handlers.getServerTime = getServerTimeInternal;
 
 var convertLeaderboardNameToCheaters = function(leaderboardName) {
 	log.debug(leaderboardName);
+	log.debug(leaderboardName + CHEATER_SUFFIX);
 
-	var insertIndex = leaderboardName.indexOf(TIER_LEADERBOARD_SUFFIX);
-
-	var cheaterLeaderboard =  (insertIndex < 0)
-		? leaderboardName + CHEATER_SUFFIX
-		: leaderboardName.slice(0, insertIndex) + CHEATER_SUFFIX + leaderboardName.slice(insertIndex);
-
-	log.debug(cheaterLeaderboard);
-
-	return cheaterLeaderboard;
+	return leaderboardName + CHEATER_SUFFIX
 }
 
 var logTierUpdateData = function(context, updatedData, updateResponse) {
@@ -270,16 +263,11 @@ handlers.updatePlayerStatistics = function (args) {
 	});
 
 	var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
-	var isCheater = isPlayerBannedInternal();
 
 	if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 		for (var i = 0; i < args.statistics.length; i++) {
 			log.debug(args.statistics[i]);
 			var leaderboardName = args.statistics[i]["StatisticName"];
-			if (isCheater) {
-				leaderboardName = convertLeaderboardNameToCheaters(leaderboardName);
-			}
-
 			var value = args.statistics[i]["Value"];
 
 			if (tutorialLeaderboardData
@@ -344,8 +332,12 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey, leaderboardName, 
 				requestParams['gameId'] = script.titleId + TITLE_ID_TOP_TIER_SUFFIX;
 			}
 
-			requestParams['leaderboardName'] = leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTierIndex;
+			requestParams['leaderboardName'] += TIER_LEADERBOARD_SUFFIX + playerTierIndex;
 		}
+	}
+
+	if (isPlayerBannedInternal()) {
+		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}
 
 	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
@@ -363,10 +355,6 @@ handlers.getPlayerLeaderboard = function (args) {
 	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
 	});
-
-	if (isPlayerBannedInternal()) {
-		args.leaderboardName = convertLeaderboardNameToCheaters(args.leaderboardName);
-	}
 
 	var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
@@ -410,6 +398,10 @@ handlers.getPlayerLeaderboard = function (args) {
 
 			requestParams['leaderboardName'] = args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTierIndex;
 		}
+	}
+
+	if (isPlayerBannedInternal()) {
+		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}
 
 	var requestUrl = getUWSServer() + "Leaderboard/GetPlayerLeaderboard";
