@@ -162,6 +162,8 @@ var banUserInternally = function (args, behaviorOverride) {
 			requestParams['leaderboardName'] += TIER_LEADERBOARD_SUFFIX + playerTier;
 		}
 
+		requestParams['leaderboardName'] += '_1';
+
 		var requestUrl = getUWSServer() + "Leaderboard/GetLeaderboardByName";
 		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 		result['leaderboardData'] = JSON.parse(rawResponse);
