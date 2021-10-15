@@ -37,9 +37,9 @@ var getServerTimeInternal = function (args) {
 handlers.getServerTime = getServerTimeInternal;
 
 var convertLeaderboardNameToCheaters = function(leaderboardName) {
-	var insertIndex = leaderboardName.indexOf(TIER_LEADERBOARD_SUFFIX);
-
 	log.debug(leaderboardName);
+
+	var insertIndex = leaderboardName.indexOf(TIER_LEADERBOARD_SUFFIX);
 
 	var cheaterLeaderboard =  (insertIndex < 0)
 		? leaderboardName + CHEATER_SUFFIX
@@ -301,7 +301,7 @@ handlers.updatePlayerStatistics = function (args) {
 			} else {
 				var updateType = args.statistics[i]["AggregationMethod"];
 
-					updatePlayerStatistic(leaderboardName, value, updateType);
+				updatePlayerStatistic(leaderboardName, value, updateType);
 			}
 
 			updates++;
