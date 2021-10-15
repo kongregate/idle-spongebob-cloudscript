@@ -160,6 +160,8 @@ var banUserInternally = function (args, behaviorOverride) {
 
 		requestParams['key'] += '_1';
 
+		result['key'] = requestParams['key'];
+
 		var requestUrl = getUWSServer() + "Cache/ZRevrange";
 		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 		result['globalScore'] = JSON.parse(rawResponse);
