@@ -43,7 +43,7 @@ var convertLeaderboardNameToCheaters = function(leaderboardName) {
 
 	var cheaterLeaderboard =  (insertIndex < 0)
 		? leaderboardName + CHEATER_SUFFIX
-		: leaderboardName.splice(0, insertIndex) + CHEATER_SUFFIX + leaderboardName.splice(insertIndex);
+		: leaderboardName.slice(0, insertIndex) + CHEATER_SUFFIX + leaderboardName.slice(insertIndex);
 
 	log.debug(cheaterLeaderboard);
 
