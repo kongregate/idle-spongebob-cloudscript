@@ -131,6 +131,8 @@ var updateBanLog = function(banData) {
 }
 
 var banUserInternally = function (args, behaviorOverride) {
+	var result = {};
+
 	var data = {};
 	data[IS_CHEATER] = true;
 
@@ -148,6 +150,22 @@ var banUserInternally = function (args, behaviorOverride) {
 		&& args.leaderboardName.length > 0
 		&& args.leaderboardName.trim()
 	) {
+		var playerTier = getPlayerTierIndex(true);
+
+		var requestParams = {};
+
+		requestParams['gameId'] = script.titleId;
+		requestParams['leaderboardName'] = TITLE_ID_GLOBAL_SUFFIX
+			+ args.leaderboardName;
+
+		if (playerTier > 0) {
+			requestParams['leaderboardName'] += TIER_LEADERBOARD_SUFFIX + playerTier;
+		}
+
+		var requestUrl = getUWSServer() + "Leaderboard/GetLeaderboardByName";
+		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+		result['leaderboardData'] = JSON.parse(rawResponse);
+
 		// NOTE : we only reset tier if there is leaderboard specified.
 		// This is due to the client (v35) auto banning not working correctly
 		// var playerTier = getPlayerTierIndex();
@@ -181,7 +199,8 @@ var banUserInternally = function (args, behaviorOverride) {
 
 	updateBanLog(banData);
 
-	return updateResult;
+	result['ban'] = updateResult;
+	return result;
 }
 // only to be used by 1.103 and older devices
 // and admin tool
