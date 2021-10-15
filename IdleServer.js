@@ -249,7 +249,7 @@ var updatePlayerTierData = function(currentTierData, newTierData, context) {
 handlers.updatePlayerStatistics = function (args) {
 	var updates = -1;
 
-	if (!isPlayerBannedInternal(currentPlayerId)) {
+	if (!isPlayerBannedInternal()) {
 		updates = 0;
 
 		var data = server.GetTitleInternalData({
@@ -544,7 +544,7 @@ handlers.updatePlayerLeaderboardTier = function(args) {
 	var result = {'value': -1};
 
 	var nextTier = -1;
-	if (!isPlayerBannedInternal(currentPlayerId)) {
+	if (!isPlayerBannedInternal()) {
 		var data = server.GetTitleInternalData({
 			"Keys" : [ "eventLeaderboardTutorial" ]
 		});
