@@ -155,18 +155,14 @@ var banUserInternally = function (args, behaviorOverride) {
 		var requestParams = {};
 
 		requestParams['gameId'] = script.titleId;
-		requestParams['leaderboardName'] = TITLE_ID_GLOBAL_SUFFIX
+		requestParams['key'] = TITLE_ID_GLOBAL_SUFFIX
 			+ args.leaderboardName;
 
-		if (playerTier > 0) {
-			requestParams['leaderboardName'] += TIER_LEADERBOARD_SUFFIX + playerTier;
-		}
+		requestParams['key'] += '_1';
 
-		requestParams['leaderboardName'] += '_1';
-
-		var requestUrl = getUWSServer() + "Leaderboard/GetLeaderboardByName";
+		var requestUrl = getUWSServer() + "Cache/ZRevrange";
 		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-		result['leaderboardData'] = JSON.parse(rawResponse);
+		result['globalScore'] = JSON.parse(rawResponse);
 
 		// NOTE : we only reset tier if there is leaderboard specified.
 		// This is due to the client (v35) auto banning not working correctly
