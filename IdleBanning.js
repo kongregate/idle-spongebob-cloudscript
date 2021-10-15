@@ -150,33 +150,33 @@ var banUserInternally = function (args, behaviorOverride) {
 	) {
 		// NOTE : we only reset tier if there is leaderboard specified.
 		// This is due to the client (v35) auto banning not working correctly
-		var playerTier = getPlayerTierIndex();
+		// var playerTier = getPlayerTierIndex();
 
-		var playerRedisKey = getPlayerLeaderboardId();
+		// var playerRedisKey = getPlayerLeaderboardId();
 
-		sendUwsUpdateLeaderboardRequest(
-			playerRedisKey,
-			args.leaderboardName,
-			0,
-			'Last',
-			playerTier
-		);
+		// sendUwsUpdateLeaderboardRequest(
+		// 	playerRedisKey,
+		// 	args.leaderboardName,
+		// 	0,
+		// 	'Last',
+		// 	playerTier
+		// );
 
-		var playerRedisKeys = playerRedisKey.split('|');
-		if (playerRedisKeys.length > 1) {
-			sendUwsUpdateLeaderboardRequest(
-				playerRedisKeys[0],
-				args.leaderboardName,
-				0,
-				'Last',
-				playerTier
-			);
-		}
+		// var playerRedisKeys = playerRedisKey.split('|');
+		// if (playerRedisKeys.length > 1) {
+		// 	sendUwsUpdateLeaderboardRequest(
+		// 		playerRedisKeys[0],
+		// 		args.leaderboardName,
+		// 		0,
+		// 		'Last',
+		// 		playerTier
+		// 	);
+		// }
 
-		updatePlayerTierData(null, {'tier': -1}, "banUser:"+args.leaderboardName);
+		// updatePlayerTierData(null, {'tier': -1}, "banUser:"+args.leaderboardName);
 
-		banData['tier'] = playerTier;
-		banData['leaderbord'] = args.leaderboardName;
+		// banData['tier'] = playerTier;
+		// banData['leaderbord'] = args.leaderboardName;
 	}
 
 	updateBanLog(banData);
