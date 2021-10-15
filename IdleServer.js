@@ -345,7 +345,8 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey, leaderboardName, 
 		}
 	}
 
-	if (isPlayerBannedInternal()) {
+	var isCheaer = isPlayerBannedInternal();
+	if (isCheaer) {
 		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}
 
@@ -353,6 +354,10 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey, leaderboardName, 
 
 	requestParams['gameId'] = script.titleId + TITLE_ID_GLOBAL_SUFFIX;
 	requestParams['leaderboardName'] = leaderboardName;
+	if (isCheaer) {
+		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
+	}
+
 	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 };
 
