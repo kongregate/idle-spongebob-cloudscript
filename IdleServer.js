@@ -274,6 +274,7 @@ handlers.updatePlayerStatistics = function (args) {
 
 	if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 		for (var i = 0; i < args.statistics.length; i++) {
+			log.debug(args.statistics[i]);
 			var leaderboardName = args.statistics[i]["StatisticName"];
 			if (isCheater) {
 				leaderboardName = convertLeaderboardNameToCheaters(leaderboardName);
