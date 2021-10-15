@@ -183,7 +183,7 @@ var isLeaderboardTierSupported = function(leaderboardName) {
 	return result;
 }
 
-var getPlayerTierIndex = function() {
+var getPlayerTierIndex = function(doNotCheckCheater) {
 	var result = -1;
 
 	var playerInternalData = server.GetUserInternalData({
@@ -215,6 +215,15 @@ var getPlayerTierIndex = function() {
 			) {
 				result = tieredLeaderboardData.tier;
 			}
+		}
+	}
+
+	// reset tier here to minimize
+	// race condition with banning
+	// cheaters
+	if (doNotCheckCheater !== true) {
+		if (isPlayerBannedInternal()) {
+			result = -1;
 		}
 	}
 
@@ -562,24 +571,29 @@ handlers.updatePlayerLeaderboardTier = function(args) {
 	var result = {'value': -1};
 
 	var nextTier = -1;
-	if (!isPlayerBannedInternal()) {
-		var data = server.GetTitleInternalData({
-			"Keys" : [ "eventLeaderboardTutorial" ]
-		});
+	var data = server.GetTitleInternalData({
+		"Keys" : [ "eventLeaderboardTutorial" ]
+	});
 
-		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
+	var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
-		if (tutorialLeaderboardData
-			&& tutorialLeaderboardData.leaderboardName
-			&& tutorialLeaderboardData === args.leaderboardName
-		) {
-			nextTier = 0;
-		} else {
-			var rankData = getPlayerRankInternal(args);
-			nextTier = (rankData != null && rankData != undefined)
-				? calculateNextTier(rankData.rank, rankData.size)
-				: 0;
-		}
+	if (tutorialLeaderboardData
+		&& tutorialLeaderboardData.leaderboardName
+		&& tutorialLeaderboardData === args.leaderboardName
+	) {
+		nextTier = 0;
+	} else {
+		var rankData = getPlayerRankInternal(args);
+		nextTier = (rankData != null && rankData != undefined)
+			? calculateNextTier(rankData.rank, rankData.size)
+			: 0;
+	}
+
+	// reset tier for cheaters here to
+	// minimize race conditions with
+	// banning
+	if (isPlayerBannedInternal()) {
+		nextTier = -1;
 	}
 
 	result.value = updatePlayerTierData(null, {'tier': nextTier}, args.leaderboardName);
