@@ -211,6 +211,7 @@ var banUserInternally = function (args, behaviorOverride) {
 			);
 		};
 
+		log.debug("maxScore.score => "  + maxScore.score + " " + (typeof maxScore.score));
 		// send write request with player flagged as cheater
 		sendUwsUpdateLeaderboardRequest(
 			maxScore.playerId,
