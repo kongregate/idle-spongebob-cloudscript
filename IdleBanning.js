@@ -193,12 +193,12 @@ var banUserInternally = function (args, behaviorOverride) {
 
 		var playerTier = getPlayerTierIndex(true);
 
-		for(var fieldName in result) {
+		for(var fieldName in playerToResetToScore) {
 			if (maxScore.score < 0
-				|| result[fieldName] > maxScore.score
+				|| playerToResetToScore[fieldName] > maxScore.score
 			) {
 				maxScore.playerId = fieldName;
-				maxScore.score = result[fieldName];
+				maxScore.score = playerToResetToScore[fieldName];
 			}
 
 			sendUwsUpdateLeaderboardRequest(
