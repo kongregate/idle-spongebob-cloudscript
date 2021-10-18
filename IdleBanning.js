@@ -154,6 +154,8 @@ var getPlayersWithScoreToReset = function(leaderboardName) {
 			&& score != null
 		) {
 			result[id] = score;
+		} else {
+			delete result[id];
 		}
 	}
 	return result;
@@ -179,8 +181,43 @@ var banUserInternally = function (args, behaviorOverride) {
 		&& args.leaderboardName.length > 0
 		&& args.leaderboardName.trim()
 	) {
+		// find player entries in global leaderboard
 		var playerToResetToScore = getPlayersWithScoreToReset(args.leaderboardName);
 		result['playerToResetToScore'] = playerToResetToScore;
+
+		// get max player score in leaderboard
+		// and reset all scores
+		var maxScore = {
+			'playerId' : null,
+			'score' : -1
+		};
+
+		var playerTier = getPlayerTierIndex(true);
+
+		for(var fieldName in result) {
+			if (maxScore.score < 0
+				|| result[fieldName] > maxScore.score
+			) {
+				maxScore.playerId = fieldName;
+				maxScore.score = result[fieldName];
+			}
+
+			sendUwsUpdateLeaderboardRequest(
+				fieldName,
+				args.leaderboardName,
+				0,
+				'Last',
+				playerTier,
+				true
+			);
+		};
+
+		// send write request with player flagged as cheater
+		sendUwsUpdateLeaderboardRequest(
+			maxScore.playerId,
+			args.leaderboardName,
+			maxScore.score
+		);
 
 		// var playerTier = getPlayerTierIndex(true);
 		// var playerRedisKey = getPlayerLeaderboardId();
@@ -221,14 +258,14 @@ var banUserInternally = function (args, behaviorOverride) {
 
 		// // reset existing scores
 		// for(var idx = 0; playersToRemove.length; idx++) {
-		// 	sendUwsUpdateLeaderboardRequest(
-		// 		playersToRemove[idx],
-		// 		args.leaderboardName,
-		// 		0,
-		// 		'Last',
-		// 		playerTier,
-		// 		true
-		// 	);
+			// sendUwsUpdateLeaderboardRequest(
+			// 	playersToRemove[idx],
+			// 	args.leaderboardName,
+			// 	0,
+			// 	'Last',
+			// 	playerTier,
+			// 	true
+			// );
 		// }
 
 		// // clear tier
