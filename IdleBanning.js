@@ -145,7 +145,7 @@ var getPlayersWithScoreToReset = function(leaderboardName) {
 	var requestUrl = getUWSServer() + "Cache/ZScore";
 
 	for(var id in result) {
-		result['member'] = id;
+		requestParams['member'] = id;
 		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 		var score = JSON.parse(rawResponse);
 
