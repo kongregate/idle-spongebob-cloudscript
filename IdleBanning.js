@@ -130,6 +130,34 @@ var updateBanLog = function(banData) {
 	});
 }
 
+var getPlayersWithScoreToReset = function(leaderboardName) {
+	var result = {};
+
+	result[currentPlayerId] == null;
+	result[getPlayerLeaderboardId] == null;
+
+	var requestParams = {};
+	requestParams['gameId'] = script.titleId;
+	requestParams['key'] = TITLE_ID_GLOBAL_SUFFIX
+		+ leaderboardName
+		+ GLOBAL_LEADERBOARD_BUCKET;
+
+	var requestUrl = getUWSServer() + "Cache/ZScore";
+
+	for(var id in result) {
+		result['member'] = id;
+		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+		var score = JSON.parse(rawResponse);
+
+		if (score != undefined
+			&& score != null
+		) {
+			result[id] = score;
+		}
+	}
+	return result;
+}
+
 var banUserInternally = function (args, behaviorOverride) {
 	var result = {};
 
@@ -150,80 +178,83 @@ var banUserInternally = function (args, behaviorOverride) {
 		&& args.leaderboardName.length > 0
 		&& args.leaderboardName.trim()
 	) {
-		var playerTier = getPlayerTierIndex(true);
-		var playerRedisKey = getPlayerLeaderboardId();
+		var playerToResetToScore = getPlayersWithScoreToReset(args.leaderboard);
+		result['playerToResetToScore'] = playerToResetToScore;
 
-		var requestParams = {};
+		// var playerTier = getPlayerTierIndex(true);
+		// var playerRedisKey = getPlayerLeaderboardId();
 
-		requestParams['gameId'] = script.titleId;
-		requestParams['key'] = TITLE_ID_GLOBAL_SUFFIX
-			+ args.leaderboardName;
+		// var requestParams = {};
 
-		requestParams['key'] += GLOBAL_LEADERBOARD_BUCKET;
+		// requestParams['gameId'] = script.titleId;
+		// requestParams['key'] = TITLE_ID_GLOBAL_SUFFIX
+		// 	+ args.leaderboardName;
 
-		result['key'] = requestParams['key'];
+		// requestParams['key'] += GLOBAL_LEADERBOARD_BUCKET;
 
-		var requestUrl = getUWSServer() + "Cache/ZRevrange";
-		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-		var globalLeaderboard = JSON.parse(rawResponse);
-		result['globalLeaderboard'] = globalLeaderboard;
+		// result['key'] = requestParams['key'];
 
-		var playersToRemove = [];
+		// var requestUrl = getUWSServer() + "Cache/ZScore";
+		// var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+		// var globalLeaderboard = JSON.parse(rawResponse);
+		// result['globalLeaderboard'] = globalLeaderboard;
 
-		// check if cheater has kong login
-		var playerIdx = globalLeaderboard.indexOf(playerRedisKey);
-		if (playerIdx >= 0) {
-			playersToRemove.push(playerRedisKey);
-			score = globalLeaderboard[playerIdx + 1];
-		}
+		// var playersToRemove = [];
 
-		// check if cheater has score pre-kong
-		playerIdx = globalLeaderboard.indexOf(currentPlayerId);
-		if (playerIdx >= 0) {
-			playersToRemove.push(playerRedisKey);
-			var subScore = globalLeaderboard[playerIdx + 1];
-			if (subScore > score) {
-				score = subScore;
-			}
-		}
+		// // check if cheater has kong login
+		// var playerIdx = globalLeaderboard.indexOf(playerRedisKey);
+		// if (playerIdx >= 0) {
+		// 	playersToRemove.push(playerRedisKey);
+		// 	score = globalLeaderboard[playerIdx + 1];
+		// }
 
-		// reset existing scores
-		for(var idx = 0; playersToRemove.length; idx++) {
-			sendUwsUpdateLeaderboardRequest(
-				playersToRemove[idx],
-				args.leaderboardName,
-				0,
-				'Last',
-				playerTier,
-				true
-			);
-		}
+		// // check if cheater has score pre-kong
+		// playerIdx = globalLeaderboard.indexOf(currentPlayerId);
+		// if (playerIdx >= 0) {
+		// 	playersToRemove.push(playerRedisKey);
+		// 	var subScore = globalLeaderboard[playerIdx + 1];
+		// 	if (subScore > score) {
+		// 		score = subScore;
+		// 	}
+		// }
 
-		// clear tier
-		updatePlayerTierData(null, {'tier': -1}, "banUser:"+args.leaderboardName);
+		// // reset existing scores
+		// for(var idx = 0; playersToRemove.length; idx++) {
+		// 	sendUwsUpdateLeaderboardRequest(
+		// 		playersToRemove[idx],
+		// 		args.leaderboardName,
+		// 		0,
+		// 		'Last',
+		// 		playerTier,
+		// 		true
+		// 	);
+		// }
 
-		// write to leaderboard with player
-		// flagged as cheater
-		sendUwsUpdateLeaderboardRequest(
-			playerRedisKey,
-			args.leaderboardName,
-			0,
-			score
-		);
+		// // clear tier
+		// updatePlayerTierData(null, {'tier': -1}, "banUser:"+args.leaderboardName);
 
-		var leaderboard = (playerTier > 0)
-			? args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTier
-			: args.leaderboardName;
+		// // write to leaderboard with player
+		// // flagged as cheater
+		// sendUwsUpdateLeaderboardRequest(
+		// 	playerRedisKey,
+		// 	args.leaderboardName,
+		// 	0,
+		// 	score
+		// );
 
-		banData['tier'] = playerTier;
-		banData['eventLeaderbord'] = args.leaderboardName;
-		banData['tierLeaderbord'] = leaderboard;
-		banData['globalLeaderbord'] = TITLE_ID_GLOBAL_SUFFIX
-			+ leaderboard
-			+ GLOBAL_LEADERBOARD_BUCKET;
-		banData['tierCheaterLeaderbord'] = convertLeaderboardNameToCheaters(leaderboard);
-		banData['globalCheaterLeaderbord'] = convertLeaderboardNameToCheaters(TITLE_ID_GLOBAL_SUFFIX + leaderboard)
-			+ GLOBAL_LEADERBOARD_BUCKET;
+		// var leaderboard = (playerTier > 0)
+		// 	? args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTier
+		// 	: args.leaderboardName;
+
+		// banData['tier'] = playerTier;
+		// banData['eventLeaderbord'] = args.leaderboardName;
+		// banData['tierLeaderbord'] = leaderboard;
+		// banData['globalLeaderbord'] = TITLE_ID_GLOBAL_SUFFIX
+		// 	+ leaderboard
+		// 	+ GLOBAL_LEADERBOARD_BUCKET;
+		// banData['tierCheaterLeaderbord'] = convertLeaderboardNameToCheaters(leaderboard);
+		// banData['globalCheaterLeaderbord'] = convertLeaderboardNameToCheaters(TITLE_ID_GLOBAL_SUFFIX + leaderboard)
+		// 	+ GLOBAL_LEADERBOARD_BUCKET;
 	}
 
 	updateBanLog(banData);
