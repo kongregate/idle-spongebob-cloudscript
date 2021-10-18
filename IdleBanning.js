@@ -144,18 +144,11 @@ var getPlayersWithScoreToReset = function(leaderboardName) {
 
 	var requestUrl = getUWSServer() + "Cache/ZScore";
 
-	result['requests'] = [];
-	result['rawResponses'] = [];
-	result['parsedResponses'] = [];
-
 	for(var id in result) {
 		requestParams['member'] = id;
 		result.requests.push(requestParams);
 		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-		result.rawResponses.push(rawResponse);
-
 		var score = JSON.parse(rawResponse);
-		result.parsedResponses.push(score);
 
 		if (score != undefined
 			&& score != null
