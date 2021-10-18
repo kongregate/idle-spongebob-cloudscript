@@ -358,7 +358,8 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
 	if (isCheater) {
 		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}
-	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+	var requestResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+	log.debug(requestResponse);
 
 	requestParams['gameId'] = script.titleId + TITLE_ID_GLOBAL_SUFFIX;
 	requestParams['leaderboardName'] = leaderboardName;
@@ -366,7 +367,8 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
 		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}
 
-	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+	requestResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+	log.debug(requestResponse);
 };
 
 handlers.getPlayerLeaderboard = function (args) {
