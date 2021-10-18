@@ -146,7 +146,6 @@ var getPlayersWithScoreToReset = function(leaderboardName) {
 
 	for(var id in result) {
 		requestParams['member'] = id;
-		result.requests.push(requestParams);
 		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 		var score = JSON.parse(rawResponse);
 
