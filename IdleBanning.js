@@ -133,8 +133,8 @@ var updateBanLog = function(banData) {
 var getPlayersWithScoreToReset = function(leaderboardName) {
 	var result = {};
 
-	result[currentPlayerId] == null;
-	result[getPlayerLeaderboardId] == null;
+	result[currentPlayerId] = null;
+	result[getPlayerLeaderboardId()] = null;
 
 	var requestParams = {};
 	requestParams['gameId'] = script.titleId;
