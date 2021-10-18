@@ -351,18 +351,18 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
 		}
 	}
 
-	if (doNotCheckCheater !== true) {
-		var isCheaer = isPlayerBannedInternal();
-		if (isCheaer) {
-			requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
-		}
-	}
+	var isCheater = (doNotCheckCheater !== true)
+		? isPlayerBannedInternal()
+		: undefined;
 
+	if (isCheater) {
+		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
+	}
 	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 
 	requestParams['gameId'] = script.titleId + TITLE_ID_GLOBAL_SUFFIX;
 	requestParams['leaderboardName'] = leaderboardName;
-	if (isCheaer) {
+	if (isCheater) {
 		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}
 
