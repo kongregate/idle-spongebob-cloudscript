@@ -186,7 +186,7 @@ var banUserInternally = function (args, behaviorOverride) {
 		&& args.leaderboardName.length > 0
 		&& args.leaderboardName.trim()
 	) {
-		var playerToResetToScore = getPlayersWithScoreToReset(args.leaderboard);
+		var playerToResetToScore = getPlayersWithScoreToReset(args.leaderboardName);
 		result['playerToResetToScore'] = playerToResetToScore;
 
 		// var playerTier = getPlayerTierIndex(true);
