@@ -365,7 +365,7 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
 };
 
 handlers.getPlayerLeaderboard = function (args) {
-	var leaderboardData = undefined;
+	var leaderboardData = [];
 
 	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
@@ -391,100 +391,97 @@ handlers.getPlayerLeaderboard = function (args) {
 				leaderboardData.push(entries[idx].value);
 			}
 		}
+	} else {
+		var requestParams = {
+			"playerId": getPlayerLeaderboardId(),
+			"readOnly": true
+		};
 
-		return result;
-	}
+		requestParams['gameId'] = script.titleId;
+		var leaderboardName = args.leaderboardName;
 
-	var requestParams = {
-		"playerId": getPlayerLeaderboardId(),
-		"readOnly": true
-	};
+		if (isLeaderboardTierSupported(args.leaderboardName)) {
+			var playerTierIndex = getPlayerTierIndex();
+			if (playerTierIndex >= 0) {
+				var topTierIndex = getTopTierId();
+				if (topTierIndex > 0 && topTierIndex == playerTierIndex) {
+					requestParams['gameId'] = script.titleId + TITLE_ID_TOP_TIER_SUFFIX;
+				}
 
-	requestParams['gameId'] = script.titleId;
-	var leaderboardName = args.leaderboardName;
+				leaderboardName = args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTierIndex;
+			}
+		}
 
-	if (isLeaderboardTierSupported(args.leaderboardName)) {
-		var playerTierIndex = getPlayerTierIndex();
-		if (playerTierIndex >= 0) {
-			var topTierIndex = getTopTierId();
-			if (topTierIndex > 0 && topTierIndex == playerTierIndex) {
-				requestParams['gameId'] = script.titleId + TITLE_ID_TOP_TIER_SUFFIX;
+		var cheater = isPlayerBannedInternal();
+		requestParams['leaderboardName'] = (cheater)
+			? convertLeaderboardNameToCheaters(leaderboardName)
+			: leaderboardName;
+
+		var requestUrl = getUWSServer() + "Leaderboard/GetPlayerLeaderboard";
+		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+
+		leaderboardData = JSON.parse(rawResponse);
+		if (leaderboardData == -1) {
+			leaderboardData = [];
+		}
+
+		var maxLeaderboardSize = SHORT_LEADERBOARD_BUCKET_SIZE + SHORT_LEADERBOARD_BUCKET_SIZE;
+
+		if (cheater
+			&& leaderboardData.length < (maxLeaderboardSize)
+		) {
+			requestParams['leaderboardName'] = leaderboardName;
+
+			var noCheaterTier = getPlayerTierIndex(true);
+			if (noCheaterTier >= 0) {
+				requestParams['leaderboardName'] += (TIER_LEADERBOARD_SUFFIX + noCheaterTier);
+			}
+			var noCheaterRawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+			var noCheaterLeaderboardData = JSON.parse(noCheaterRawResponse);
+			if (noCheaterLeaderboardData == -1) {
+				noCheaterLeaderboardData = [];
 			}
 
-			leaderboardName = args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTierIndex;
-		}
-	}
+			var leaderboardDataObjects = [];
 
-	var cheater = isPlayerBannedInternal();
-	requestParams['leaderboardName'] = (cheater)
-		? convertLeaderboardNameToCheaters(leaderboardName)
-		: leaderboardName;
-
-	var requestUrl = getUWSServer() + "Leaderboard/GetPlayerLeaderboard";
-	var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-
-	leaderboardData = JSON.parse(rawResponse);
-	if (leaderboardData == -1) {
-		leaderboardData = [];
-	}
-
-	var maxLeaderboardSize = SHORT_LEADERBOARD_BUCKET_SIZE + SHORT_LEADERBOARD_BUCKET_SIZE;
-
-	if (cheater
-		&& leaderboardData.length < (maxLeaderboardSize)
-	) {
-		requestParams['leaderboardName'] = leaderboardName;
-
-		var noCheaterTier = getPlayerTierIndex(true);
-		if (noCheaterTier >= 0) {
-			requestParams['leaderboardName'] += (TIER_LEADERBOARD_SUFFIX + noCheaterTier);
-		}
-		var noCheaterRawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-		var noCheaterLeaderboardData = JSON.parse(noCheaterRawResponse);
-		if (noCheaterLeaderboardData == -1) {
-			noCheaterLeaderboardData = [];
-		}
-		result['noCheaterLeaderboardData'] = noCheaterLeaderboardData;
-
-		var leaderboardDataObjects = [];
-
-		for(var idx = 0; idx < leaderboardData.length; idx += 2) {
-			leaderboardDataObjects.push({
-				'player':leaderboardData[idx],
-				'score':leaderboardData[idx + 1]
-			});
-		}
-
-		for(var idx = 1;
-			idx < noCheaterLeaderboardData.length
-				&& leaderboardDataObjects.length < SHORT_LEADERBOARD_BUCKET_SIZE;
-			idx += 2
-		) {
-			if (leaderboardData[idx] != undefined
-				&& leaderboardData[idx] != null
-				&& leaderboardData[idx] > 0
-			) {
+			for(var idx = 0; idx < leaderboardData.length; idx += 2) {
 				leaderboardDataObjects.push({
-					'player':leaderboardData[idx - 1],
-					'score':leaderboardData[idx]
+					'player':leaderboardData[idx],
+					'score':leaderboardData[idx + 1]
 				});
 			}
-		}
 
-		if (leaderboardDataObjects) {
-			leaderboardDataObjects.sort((x, y) => {
-				return y.score - x.score;
-			});
+			for(var idx = 1;
+				idx < noCheaterLeaderboardData.length
+					&& leaderboardDataObjects.length < SHORT_LEADERBOARD_BUCKET_SIZE;
+				idx += 2
+			) {
+				if (leaderboardData[idx] != undefined
+					&& leaderboardData[idx] != null
+					&& leaderboardData[idx] > 0
+				) {
+					leaderboardDataObjects.push({
+						'player':leaderboardData[idx - 1],
+						'score':leaderboardData[idx]
+					});
+				}
+			}
 
-			for(var idx = 0; idx < leaderboardDataObjects.length; idx++) {
-				var dataObject = leaderboardDataObjects[idx];
+			if (leaderboardDataObjects) {
+				leaderboardDataObjects.sort((x, y) => {
+					return y.score - x.score;
+				});
 
-				leaderboardData = leaderboardData.concat(Object.values(dataObject));
+				for(var idx = 0; idx < leaderboardDataObjects.length; idx++) {
+					var dataObject = leaderboardDataObjects[idx];
+
+					leaderboardData = leaderboardData.concat(Object.values(dataObject));
+				}
 			}
 		}
 	}
 
-	return leaderboardData;
+	return { 'value' :leaderboardData };
 }
 
 handlers.getLeaderboardByName = function (args) {
