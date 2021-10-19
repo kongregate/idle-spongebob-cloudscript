@@ -451,6 +451,7 @@ handlers.getPlayerLeaderboard = function (args) {
 				});
 			}
 
+			log.debug(noCheaterLeaderboardData);
 			for(var idx = 1;
 				idx < noCheaterLeaderboardData.length
 					&& leaderboardDataObjects.length < SHORT_LEADERBOARD_BUCKET_SIZE;
