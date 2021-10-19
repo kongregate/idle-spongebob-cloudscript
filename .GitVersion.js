@@ -1,5 +1,5 @@
 /*
-0c8700ee0529826860d44087164a3e80fe6666bc
+4012ad0bb50e3ee6b7be5dfe6808d88a4b945a5c
 lsaenz/cheater-leaderboards
 IMPORTANT:
 The above value is not directly mappable to a commit in the repo, but can be used to confirm that the same Cloudscript file is in place between Development and Production

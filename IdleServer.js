@@ -365,9 +365,7 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
 };
 
 handlers.getPlayerLeaderboard = function (args) {
-	var result = {
-		"value": { }
-	};
+	var leaderboardData = undefined;
 
 	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
@@ -379,7 +377,7 @@ handlers.getPlayerLeaderboard = function (args) {
 		&& tutorialLeaderboardData.leaderboardName
 		&& tutorialLeaderboardData.leaderboardName == args.leaderboardName
 	) {
-		result.value = [];
+		leaderboardData = [];
 
 		var readOnlyData = server.GetUserInternalData({
 			"PlayFabId": currentPlayerId,
@@ -389,8 +387,8 @@ handlers.getPlayerLeaderboard = function (args) {
 		if (readOnlyData.Data[args.leaderboardName]) {
 			var entries = JSON.parse(readOnlyData.Data[args.leaderboardName].Value);
 			for(var idx = 0; idx < entries.length; idx++) {
-				result.value.push(entries[idx].player);
-				result.value.push(entries[idx].value);
+				leaderboardData.push(entries[idx].player);
+				leaderboardData.push(entries[idx].value);
 			}
 		}
 
@@ -424,13 +422,16 @@ handlers.getPlayerLeaderboard = function (args) {
 
 	var requestUrl = getUWSServer() + "Leaderboard/GetPlayerLeaderboard";
 	var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-	var leaderboardData = JSON.parse(rawResponse);
+
+	leaderboardData = JSON.parse(rawResponse);
 	if (leaderboardData == -1) {
 		leaderboardData = [];
 	}
 
+	var maxLeaderboardSize = SHORT_LEADERBOARD_BUCKET_SIZE + SHORT_LEADERBOARD_BUCKET_SIZE;
+
 	if (cheater
-		&& leaderboardData.length < 100
+		&& leaderboardData.length < (maxLeaderboardSize)
 	) {
 		requestParams['leaderboardName'] = leaderboardName;
 
@@ -440,35 +441,50 @@ handlers.getPlayerLeaderboard = function (args) {
 		}
 		var noCheaterRawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 		var noCheaterLeaderboardData = JSON.parse(noCheaterRawResponse);
+		if (noCheaterLeaderboardData == -1) {
+			noCheaterLeaderboardData = [];
+		}
 		result['noCheaterLeaderboardData'] = noCheaterLeaderboardData;
 
-		var copyStartIdx = 0;
-		for(var idx = noCheaterLeaderboardData.length - 2; idx >= 0 ; idx -= 2) {
-			if (leaderboardData[leaderboardData.length + 1] <= noCheaterLeaderboardData[idx]) {
-				copyStartIdx = idx;
-				break;
+		var leaderboardDataObjects = [];
+
+		for(var idx = 0; idx < leaderboardData.length; idx += 2) {
+			leaderboardDataObjects.push({
+				'player':leaderboardData[idx],
+				'score':leaderboardData[idx + 1]
+			});
+		}
+
+		for(var idx = 1;
+			idx < noCheaterLeaderboardData.length
+				&& leaderboardDataObjects.length < SHORT_LEADERBOARD_BUCKET_SIZE;
+			idx += 2
+		) {
+			if (leaderboardData[idx] != undefined
+				&& leaderboardData[idx] != null
+				&& leaderboardData[idx] > 0
+			) {
+				leaderboardDataObjects.push({
+					'player':leaderboardData[idx - 1],
+					'score':leaderboardData[idx]
+				});
 			}
 		}
 
-		while(leaderboardData.length < 100
-			&& noCheaterLeaderboardData[copyStartIdx]
-		) {
-			var noneCheaterPlayer = noCheaterLeaderboardData[copyStartIdx];
-			var noneCheaterPlayerScore = noCheaterLeaderboardData[copyStartIdx + 1];
-			if (leaderboardData.indexOf(noneCheaterPlayer) < 0
-				&& noneCheaterPlayerScore > 0
-			) {
-				leaderboardData.push(noneCheaterPlayer);
-				leaderboardData.push(noneCheaterPlayerScore);
-			}
+		if (leaderboardDataObjects) {
+			leaderboardDataObjects.sort((x, y) => {
+				return y.score - x.score;
+			});
 
-			copyStartIdx += 2;
+			for(var idx = 0; idx < leaderboardDataObjects.length; idx++) {
+				var dataObject = leaderboardDataObjects[idx];
+
+				leaderboardData = leaderboardData.concat(Object.values(dataObject));
+			}
 		}
 	}
 
-	result.value = leaderboardData;
-
-	return result;
+	return leaderboardData;
 }
 
 handlers.getLeaderboardByName = function (args) {
