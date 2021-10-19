@@ -37,9 +37,6 @@ var getServerTimeInternal = function (args) {
 handlers.getServerTime = getServerTimeInternal;
 
 var convertLeaderboardNameToCheaters = function(leaderboardName) {
-	log.debug(leaderboardName);
-	log.debug(leaderboardName + CHEATER_SUFFIX);
-
 	return leaderboardName + CHEATER_SUFFIX
 }
 
@@ -275,7 +272,6 @@ handlers.updatePlayerStatistics = function (args) {
 
 	if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
 		for (var i = 0; i < args.statistics.length; i++) {
-			log.debug(args.statistics[i]);
 			var leaderboardName = args.statistics[i]["StatisticName"];
 			var value = args.statistics[i]["Value"];
 
@@ -358,17 +354,14 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
 	if (isCheater) {
 		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}
-	var requestResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-	log.debug(requestResponse);
+	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 
 	requestParams['gameId'] = script.titleId + TITLE_ID_GLOBAL_SUFFIX;
 	requestParams['leaderboardName'] = leaderboardName;
 	if (isCheater) {
 		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}
-
-	requestResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-	log.debug(requestResponse);
+	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 };
 
 handlers.getPlayerLeaderboard = function (args) {

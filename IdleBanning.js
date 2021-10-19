@@ -182,7 +182,6 @@ var banUserInternally = function (args, behaviorOverride) {
 	) {
 		// find player entries in global leaderboard
 		var playerToResetToScore = getPlayersWithScoreToReset(args.leaderboardName);
-		result['playerToResetToScore'] = playerToResetToScore;
 
 		// get max player score in leaderboard
 		// and reset all scores
@@ -211,94 +210,19 @@ var banUserInternally = function (args, behaviorOverride) {
 			);
 		};
 
-		log.debug("maxScore.score => "  + maxScore.score + " " + (typeof maxScore.score));
 		// send write request with player flagged as cheater
 		sendUwsUpdateLeaderboardRequest(
 			maxScore.playerId,
 			args.leaderboardName,
 			maxScore.score
 		);
-
-		// var playerTier = getPlayerTierIndex(true);
-		// var playerRedisKey = getPlayerLeaderboardId();
-
-		// var requestParams = {};
-
-		// requestParams['gameId'] = script.titleId;
-		// requestParams['key'] = TITLE_ID_GLOBAL_SUFFIX
-		// 	+ args.leaderboardName;
-
-		// requestParams['key'] += GLOBAL_LEADERBOARD_BUCKET;
-
-		// result['key'] = requestParams['key'];
-
-		// var requestUrl = getUWSServer() + "Cache/ZScore";
-		// var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-		// var globalLeaderboard = JSON.parse(rawResponse);
-		// result['globalLeaderboard'] = globalLeaderboard;
-
-		// var playersToRemove = [];
-
-		// // check if cheater has kong login
-		// var playerIdx = globalLeaderboard.indexOf(playerRedisKey);
-		// if (playerIdx >= 0) {
-		// 	playersToRemove.push(playerRedisKey);
-		// 	score = globalLeaderboard[playerIdx + 1];
-		// }
-
-		// // check if cheater has score pre-kong
-		// playerIdx = globalLeaderboard.indexOf(currentPlayerId);
-		// if (playerIdx >= 0) {
-		// 	playersToRemove.push(playerRedisKey);
-		// 	var subScore = globalLeaderboard[playerIdx + 1];
-		// 	if (subScore > score) {
-		// 		score = subScore;
-		// 	}
-		// }
-
-		// // reset existing scores
-		// for(var idx = 0; playersToRemove.length; idx++) {
-			// sendUwsUpdateLeaderboardRequest(
-			// 	playersToRemove[idx],
-			// 	args.leaderboardName,
-			// 	0,
-			// 	'Last',
-			// 	playerTier,
-			// 	true
-			// );
-		// }
-
-		// // clear tier
-		// updatePlayerTierData(null, {'tier': -1}, "banUser:"+args.leaderboardName);
-
-		// // write to leaderboard with player
-		// // flagged as cheater
-		// sendUwsUpdateLeaderboardRequest(
-		// 	playerRedisKey,
-		// 	args.leaderboardName,
-		// 	0,
-		// 	score
-		// );
-
-		// var leaderboard = (playerTier > 0)
-		// 	? args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTier
-		// 	: args.leaderboardName;
-
-		// banData['tier'] = playerTier;
-		// banData['eventLeaderbord'] = args.leaderboardName;
-		// banData['tierLeaderbord'] = leaderboard;
-		// banData['globalLeaderbord'] = TITLE_ID_GLOBAL_SUFFIX
-		// 	+ leaderboard
-		// 	+ GLOBAL_LEADERBOARD_BUCKET;
-		// banData['tierCheaterLeaderbord'] = convertLeaderboardNameToCheaters(leaderboard);
-		// banData['globalCheaterLeaderbord'] = convertLeaderboardNameToCheaters(TITLE_ID_GLOBAL_SUFFIX + leaderboard)
-		// 	+ GLOBAL_LEADERBOARD_BUCKET;
 	}
 
 	updateBanLog(banData);
 
 	result['ban'] = updateResult;
 	return result;
+	// return updateResult;
 }
 // only to be used by 1.103 and older devices
 // and admin tool
