@@ -161,8 +161,6 @@ var getPlayersWithScoreToReset = function(leaderboardName) {
 }
 
 var banUserInternally = function (args, behaviorOverride) {
-	var result = {};
-
 	var data = {};
 	data[IS_CHEATER] = true;
 
@@ -211,6 +209,9 @@ var banUserInternally = function (args, behaviorOverride) {
 		};
 
 		// send write request with player flagged as cheater
+		banData['leaderboard'] = args.leaderboardName;
+		banData['score'] = maxScore.score;
+
 		sendUwsUpdateLeaderboardRequest(
 			maxScore.playerId,
 			args.leaderboardName,
@@ -225,9 +226,7 @@ var banUserInternally = function (args, behaviorOverride) {
 
 	updateBanLog(banData);
 
-	result['ban'] = updateResult;
-	return result;
-	// return updateResult;
+	return updateResult;
 }
 // only to be used by 1.103 and older devices
 // and admin tool
