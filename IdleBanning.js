@@ -128,6 +128,8 @@ var updateBanLog = function(banData) {
 			"banLog": JSON.stringify(banLogData)
 		}
 	});
+
+	SendLogglyError(banData.origin, banData);
 }
 
 var getPlayersWithScoreToReset = function(leaderboardName) {
@@ -221,8 +223,6 @@ var banUserInternally = function (args, behaviorOverride) {
 	}
 
 	updateBanLog(banData);
-
-	SendLogglyError(banData.origin, banData)
 
 	return updateResult;
 }
