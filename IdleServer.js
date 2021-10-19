@@ -431,6 +431,11 @@ handlers.getPlayerLeaderboard = function (args) {
 
 	if (cheater) {
 		requestParams['leaderboardName'] = leaderboardName;
+
+		var noCheaterTier = getPlayerTierIndex(true);
+		if (noCheaterTier >= 0) {
+			requestParams['leaderboardName'] += (TIER_LEADERBOARD_SUFFIX + noCheaterTier);
+		}
 		var noCheaterRawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 		var noCheaterLeaderboardData = JSON.parse(noCheaterRawResponse);
 		result['noCheaterLeaderboardData'] = noCheaterLeaderboardData;
