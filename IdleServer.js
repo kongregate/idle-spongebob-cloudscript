@@ -450,11 +450,19 @@ handlers.getPlayerLeaderboard = function (args) {
 			}
 		}
 
-		while(leaderboardData.length < 100) {
-			leaderboardData.push(noCheaterLeaderboardData[copyStartIdx]);
-			copyStartIdx++;
-			leaderboardData.push(noCheaterLeaderboardData[copyStartIdx]);
-			copyStartIdx++;
+		while(leaderboardData.length < 100
+			&& noCheaterLeaderboardData[copyStartIdx]
+		) {
+			var noneCheaterPlayer = noCheaterLeaderboardData[copyStartIdx];
+			var noneCheaterPlayerScore = noCheaterLeaderboardData[copyStartIdx + 1];
+			if (leaderboardData.indexOf(noneCheaterPlayer) < 0
+				&& noneCheaterPlayerScore > 0
+			) {
+				leaderboardData.push(noneCheaterPlayer);
+				leaderboardData.push(noneCheaterPlayerScore);
+			}
+
+			copyStartIdx += 2;
 		}
 	}
 
