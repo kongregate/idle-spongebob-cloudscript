@@ -472,6 +472,8 @@ handlers.getPlayerLeaderboard = function (args) {
 				}
 			}
 
+			log.debug('leaderboardDataObjects.length => ' + leaderboardDataObjects.length);
+
 			if (leaderboardDataObjects) {
 				leaderboardDataObjects.sort((x, y) => {
 					return y.score - x.score;
@@ -483,6 +485,8 @@ handlers.getPlayerLeaderboard = function (args) {
 					leaderboardData = leaderboardData.concat(Object.values(dataObject));
 				}
 			}
+
+			log.debug('leaderboardData.length => ' + leaderboardData.length);
 		}
 	}
 
