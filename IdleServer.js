@@ -442,51 +442,93 @@ handlers.getPlayerLeaderboard = function (args) {
 				noCheaterLeaderboardData = [];
 			}
 
-			var leaderboardDataObjects = [];
+			if (noCheaterLeaderboardData.length > 0) {
+				log.debug('noCheaterLeaderboardData.length => ' + noCheaterLeaderboardData.length);
+				log.debug('leaderboardData.length => ' + leaderboardData.length);
+				// log.debug('leaderboardDataObjects.length => ' + leaderboardDataObjects.length);
+				log.debug('maxLeaderboardSize => ' + maxLeaderboardSize);
 
-			for(var idx = 0; idx < leaderboardData.length; idx += 2) {
-				leaderboardDataObjects.push({
-					'player':leaderboardData[idx],
-					'score':leaderboardData[idx + 1]
-				});
-			}
-
-			log.debug('noCheaterLeaderboardData.length => ' + noCheaterLeaderboardData.length);
-			log.debug('leaderboardData.length => ' + leaderboardData.length);
-			log.debug('leaderboardDataObjects.length => ' + leaderboardDataObjects.length);
-			log.debug('SHORT_LEADERBOARD_BUCKET_SIZE => ' + SHORT_LEADERBOARD_BUCKET_SIZE);
-
-			for(var idx = 1;
-				idx < noCheaterLeaderboardData.length
-					&& leaderboardDataObjects.length < SHORT_LEADERBOARD_BUCKET_SIZE;
-				idx += 2
-			) {
-				if (leaderboardData[idx] != undefined
-					&& leaderboardData[idx] != null
-					&& leaderboardData[idx] > 0
+				var skipedData = 0;
+				for(var idx = 0;
+					idx < noCheaterLeaderboardData.length
+						&& leaderboardData.length < maxLeaderboardSize;
+					idx += 2
 				) {
+					var player = noCheaterLeaderboardData[idx];
+					var score = noCheaterLeaderboardData[idx + 1];
+
+					if (player
+						&& score
+						&& leaderboardData.indexOf(player) < 0
+						&& score > 0
+					) {
+						leaderboardData.push(player);
+						leaderboardData.push(score);
+					} else {
+						skipedData += 2;
+					}
+				}
+
+				var leaderboardDataObjects = [];
+				for (var idx = 0; idx < leaderboardData.length; idx += 2) {
 					leaderboardDataObjects.push({
-						'player':leaderboardData[idx - 1],
-						'score':leaderboardData[idx]
+						"player" : leaderboardData[idx],
+						"score" : leaderboardData[idx + 1]
 					});
 				}
-			}
 
-			log.debug('leaderboardDataObjects.length => ' + leaderboardDataObjects.length);
-
-			if (leaderboardDataObjects) {
 				leaderboardDataObjects.sort((x, y) => {
 					return y.score - x.score;
 				});
 
+				leaderboardData = [];
 				for(var idx = 0; idx < leaderboardDataObjects.length; idx++) {
-					var dataObject = leaderboardDataObjects[idx];
-
-					leaderboardData = leaderboardData.concat(Object.values(dataObject));
+					var dataPoint = leaderboardDataObjects[idx];
+					leaderboardData.push(dataPoint.player);
+					leaderboardData.push(dataPoint.score);
 				}
-			}
 
-			log.debug('leaderboardData.length => ' + leaderboardData.length);
+				log.debug("skipedData => " + skipedData);
+				log.debug("leaderboardData.length => " + leaderboardData.length);
+				// for(var idx = 0; idx < leaderboardData.length; idx += 2) {
+				// 	leaderboardDataObjects.push({
+				// 		'player':leaderboardData[idx],
+				// 		'score':leaderboardData[idx + 1]
+				// 	});
+				// }
+
+				// for(var idx = 1;
+				// 	idx < noCheaterLeaderboardData.length
+				// 		&& leaderboardDataObjects.length < SHORT_LEADERBOARD_BUCKET_SIZE;
+				// 	idx += 2
+				// ) {
+				// 	if (leaderboardData[idx] != undefined
+				// 		&& leaderboardData[idx] != null
+				// 		&& leaderboardData[idx] > 0
+				// 	) {
+				// 		leaderboardDataObjects.push({
+				// 			'player':leaderboardData[idx - 1],
+				// 			'score':leaderboardData[idx]
+				// 		});
+				// 	}
+				// }
+
+				// log.debug('leaderboardDataObjects.length => ' + leaderboardDataObjects.length);
+
+				// if (leaderboardDataObjects) {
+				// 	leaderboardDataObjects.sort((x, y) => {
+				// 		return y.score - x.score;
+				// 	});
+
+				// 	for(var idx = 0; idx < leaderboardDataObjects.length; idx++) {
+				// 		var dataObject = leaderboardDataObjects[idx];
+
+				// 		leaderboardData = leaderboardData.concat(Object.values(dataObject));
+				// 	}
+				// }
+
+				// log.debug('leaderboardData.length => ' + leaderboardData.length);
+			}
 		}
 	}
 
