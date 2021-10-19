@@ -403,7 +403,7 @@ handlers.getPlayerLeaderboard = function (args) {
 	};
 
 	requestParams['gameId'] = script.titleId;
-	requestParams['leaderboardName'] = args.leaderboardName;
+	var leaderboardName = args.leaderboardName;
 
 	if (isLeaderboardTierSupported(args.leaderboardName)) {
 		var playerTierIndex = getPlayerTierIndex();
@@ -413,19 +413,27 @@ handlers.getPlayerLeaderboard = function (args) {
 				requestParams['gameId'] = script.titleId + TITLE_ID_TOP_TIER_SUFFIX;
 			}
 
-			requestParams['leaderboardName'] = args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTierIndex;
+			leaderboardName = args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTierIndex;
 		}
 	}
 
-	if (isPlayerBannedInternal()) {
-		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
-	}
+	var cheater = isPlayerBannedInternal();
+	requestParams['leaderboardName'] = (cheater)
+		? convertLeaderboardNameToCheaters(leaderboardName)
+		: leaderboardName;
 
 	var requestUrl = getUWSServer() + "Leaderboard/GetPlayerLeaderboard";
 	var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 	var leaderboardData = JSON.parse(rawResponse);
 	if (leaderboardData == -1) {
 		leaderboardData = [];
+	}
+
+	if (cheater) {
+		requestParams['leaderboardName'] = leaderboardName;
+		var noCheaterRawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+		var noCheaterLeaderboardData = JSON.parse(noCheaterRawResponse);
+		result['noCheaterLeaderboardData'] = noCheaterLeaderboardData;
 	}
 
 	result.value = leaderboardData;
