@@ -128,6 +128,38 @@ var updateBanLog = function(banData) {
 			"banLog": JSON.stringify(banLogData)
 		}
 	});
+
+	SendLogglyError(banData.origin, banData);
+}
+
+var getPlayersWithScoreToReset = function(leaderboardName) {
+	var result = {};
+
+	result[currentPlayerId] = null;
+	result[getPlayerLeaderboardId()] = null;
+
+	var requestParams = {};
+	requestParams['gameId'] = script.titleId;
+	requestParams['key'] = TITLE_ID_GLOBAL_SUFFIX
+		+ leaderboardName
+		+ GLOBAL_LEADERBOARD_BUCKET;
+
+	var requestUrl = getUWSServer() + "Cache/ZScore";
+
+	for(var id in result) {
+		requestParams['member'] = id;
+		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+		var score = JSON.parse(rawResponse);
+
+		if (score != undefined
+			&& score != null
+		) {
+			result[id] = score;
+		} else {
+			delete result[id];
+		}
+	}
+	return result;
 }
 
 var banUserInternally = function (args, behaviorOverride) {
@@ -140,7 +172,10 @@ var banUserInternally = function (args, behaviorOverride) {
 		behaviorOverride
     );
 
-	var banData = { "ban": data[IS_CHEATER] };
+	var banData = {
+		'origin': (args.origin && args.origin.trim()) ? args.origin : "clientAutoBan",
+		"ban": data[IS_CHEATER]
+	};
 
 	if (args != null
 		&& args != undefined
@@ -148,35 +183,43 @@ var banUserInternally = function (args, behaviorOverride) {
 		&& args.leaderboardName.length > 0
 		&& args.leaderboardName.trim()
 	) {
-		// NOTE : we only reset tier if there is leaderboard specified.
-		// This is due to the client (v35) auto banning not working correctly
-		var playerTier = getPlayerTierIndex();
+		// find player entries in global leaderboard
+		var playerToResetToScore = getPlayersWithScoreToReset(args.leaderboardName);
+		var maxScore = 0;
 
-		var playerRedisKey = getPlayerLeaderboardId();
+		if (playerToResetToScore) {
+			// get max player score in leaderboard
+			// and reset all scores
+			maxScore = playerToResetToScore[getPlayerLeaderboardId()];
 
-		sendUwsUpdateLeaderboardRequest(
-			playerRedisKey,
-			args.leaderboardName,
-			0,
-			'Last',
-			playerTier
-		);
+			var playerTier = getPlayerTierIndex(true);
 
-		var playerRedisKeys = playerRedisKey.split('|');
-		if (playerRedisKeys.length > 1) {
-			sendUwsUpdateLeaderboardRequest(
-				playerRedisKeys[0],
-				args.leaderboardName,
-				0,
-				'Last',
-				playerTier
-			);
+			for(var fieldName in playerToResetToScore) {
+				sendUwsUpdateLeaderboardRequest(
+					fieldName,
+					args.leaderboardName,
+					0,
+					'Last',
+					playerTier,
+					true
+				);
+			};
 		}
 
-		updatePlayerTierData(null, {'tier': -1}, "banUser:"+args.leaderboardName);
+		// send write request with player flagged as cheater
+		banData['leaderboard'] = args.leaderboardName;
+		banData['score'] = maxScore;
 
-		banData['tier'] = playerTier;
-		banData['leaderbord'] = args.leaderboardName;
+		sendUwsUpdateLeaderboardRequest(
+			getPlayerLeaderboardId(),
+			args.leaderboardName,
+			maxScore
+		);
+
+		// LS NOTE : We no longer reset leaderboard tier
+		// as we use the original leaderboard to pad the
+		// cheater leaderboard if cheater leaderboard has
+		// less entries than original leaderboard
 	}
 
 	updateBanLog(banData);

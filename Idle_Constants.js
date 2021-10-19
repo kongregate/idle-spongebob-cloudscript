@@ -3,8 +3,11 @@ const HISTORY_LOG_SIZE = 100;
 const SUCCESS_CODE = 200;
 const RESOURCE_LOCKED_CODE = 423;
 const TIER_LEADERBOARD_KEY = 'tieredLeaderboardData';
-const TITLE_ID_TOP_TIER_SUFIX = '_TopTier';
-const TITLE_ID_GLOBAL_SUFIX = '_Global';
+const TITLE_ID_TOP_TIER_SUFFIX = '_TopTier';
+const TITLE_ID_GLOBAL_SUFFIX = '_Global';
+const CHEATER_SUFFIX = "_Cheater";
+const TIER_LEADERBOARD_SUFFIX = '_Tier';
+const GLOBAL_LEADERBOARD_BUCKET = '_1';
 
 const SERVER_CONFIG = {
         leaderboardServers: {
@@ -27,3 +30,5 @@ const CHAT_BAN_TIMESTAMP_KEY = "chatBanEndTimeStamp";
 const CHEATER_DATA_MIGRATION = "CheaterDataMigration";
 const CHEATER_DATA_INTERNAL = "CheaterDataInternal";
 const CHEATER_DATA_BEHAVIOR = CHEATER_DATA_MIGRATION;
+
+const SHORT_LEADERBOARD_BUCKET_SIZE = 50;

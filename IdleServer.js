@@ -36,6 +36,10 @@ var getServerTimeInternal = function (args) {
 };
 handlers.getServerTime = getServerTimeInternal;
 
+var convertLeaderboardNameToCheaters = function(leaderboardName) {
+	return leaderboardName + CHEATER_SUFFIX
+}
+
 var logTierUpdateData = function(context, updatedData, updateResponse) {
 	if (context == null || context == undefined) {
 		context = "MissingContext";
@@ -176,7 +180,7 @@ var isLeaderboardTierSupported = function(leaderboardName) {
 	return result;
 }
 
-var getPlayerTierIndex = function() {
+var getPlayerTierIndex = function(doNotCheckCheater) {
 	var result = -1;
 
 	var playerInternalData = server.GetUserInternalData({
@@ -208,6 +212,15 @@ var getPlayerTierIndex = function() {
 			) {
 				result = tieredLeaderboardData.tier;
 			}
+		}
+	}
+
+	// reset tier here to minimize
+	// race condition with banning
+	// cheaters
+	if (doNotCheckCheater !== true) {
+		if (isPlayerBannedInternal()) {
+			result = -1;
 		}
 	}
 
@@ -247,47 +260,43 @@ var updatePlayerTierData = function(currentTierData, newTierData, context) {
  * }
  */
 handlers.updatePlayerStatistics = function (args) {
-	var updates = -1;
+	var updates = 0;
 
-	if (!isPlayerBannedInternal(currentPlayerId)) {
-		updates = 0;
+	var data = server.GetTitleInternalData({
+		"Keys" : [ "eventLeaderboardTutorial" ]
+	});
 
-		var data = server.GetTitleInternalData({
-			"Keys" : [ "eventLeaderboardTutorial" ]
-		});
+	var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
-		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
+	if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
+		for (var i = 0; i < args.statistics.length; i++) {
+			var leaderboardName = args.statistics[i]["StatisticName"];
+			var value = args.statistics[i]["Value"];
 
-		if (args.hasOwnProperty("statistics") && args.statistics != null && args.statistics != undefined) {
-			for (var i = 0; i < args.statistics.length; i++) {
-				var leaderboardName = args.statistics[i]["StatisticName"];
-				var value = args.statistics[i]["Value"];
+			if (tutorialLeaderboardData
+				&& tutorialLeaderboardData.leaderboardName
+				&& tutorialLeaderboardData.leaderboardName === leaderboardName
+			) {
+				var entries = buildEventTutorialLeaderboardEntries(
+					getPlayerLeaderboardId(),
+					value,
+					tutorialLeaderboardData
+				);
 
-				if (tutorialLeaderboardData
-					&& tutorialLeaderboardData.leaderboardName
-					&& tutorialLeaderboardData.leaderboardName === leaderboardName
-				) {
-					var entries = buildEventTutorialLeaderboardEntries(
-						getPlayerLeaderboardId(),
-						value,
-						tutorialLeaderboardData
-					);
+				var data = {};
+				data[leaderboardName] = JSON.stringify(entries);
 
-					var data = {};
-					data[leaderboardName] = JSON.stringify(entries);
+				server.UpdateUserInternalData({
+					"PlayFabId": currentPlayerId,
+					"Data" : data
+				});
+			} else {
+				var updateType = args.statistics[i]["AggregationMethod"];
 
-					server.UpdateUserInternalData({
-						"PlayFabId": currentPlayerId,
-						"Data" : data
-					});
-				} else {
-					var updateType = args.statistics[i]["AggregationMethod"];
-
-					updatePlayerStatistic(leaderboardName, value, updateType);
-				}
-
-				updates++;
+				updatePlayerStatistic(leaderboardName, value, updateType);
 			}
+
+			updates++;
 		}
 	}
 
@@ -304,7 +313,13 @@ var updatePlayerStatistic = function (leaderboardName, value, updateType, tierOv
 	);
 }
 
-var sendUwsUpdateLeaderboardRequest = function(playerRedisKey, leaderboardName, value, updateType, tierOverride) {
+var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
+	leaderboardName,
+	value,
+	updateType,
+	tierOverride,
+	doNotCheckCheater
+) {
 	var requestParams = {
 		"playerId": playerRedisKey,
 		"value": value,
@@ -323,24 +338,32 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey, leaderboardName, 
 		if (playerTierIndex >= 0) {
 			var topTierIndex = getTopTierId();
 			if (topTierIndex > 0 && topTierIndex == playerTierIndex) {
-				requestParams['gameId'] = script.titleId + TITLE_ID_TOP_TIER_SUFIX;
+				requestParams['gameId'] = script.titleId + TITLE_ID_TOP_TIER_SUFFIX;
 			}
 
-			requestParams['leaderboardName'] = leaderboardName + '_Tier' + playerTierIndex;
+			requestParams['leaderboardName'] += TIER_LEADERBOARD_SUFFIX + playerTierIndex;
 		}
 	}
 
+	var isCheater = (doNotCheckCheater !== true)
+		? isPlayerBannedInternal()
+		: undefined;
+
+	if (isCheater) {
+		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
+	}
 	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 
-	requestParams['gameId'] = script.titleId + TITLE_ID_GLOBAL_SUFIX;
+	requestParams['gameId'] = script.titleId + TITLE_ID_GLOBAL_SUFFIX;
 	requestParams['leaderboardName'] = leaderboardName;
+	if (isCheater) {
+		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
+	}
 	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 };
 
 handlers.getPlayerLeaderboard = function (args) {
-	var result = {
-		"value": { }
-	};
+	var leaderboardData = [];
 
 	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
@@ -352,7 +375,7 @@ handlers.getPlayerLeaderboard = function (args) {
 		&& tutorialLeaderboardData.leaderboardName
 		&& tutorialLeaderboardData.leaderboardName == args.leaderboardName
 	) {
-		result.value = [];
+		leaderboardData = [];
 
 		var readOnlyData = server.GetUserInternalData({
 			"PlayFabId": currentPlayerId,
@@ -362,50 +385,113 @@ handlers.getPlayerLeaderboard = function (args) {
 		if (readOnlyData.Data[args.leaderboardName]) {
 			var entries = JSON.parse(readOnlyData.Data[args.leaderboardName].Value);
 			for(var idx = 0; idx < entries.length; idx++) {
-				result.value.push(entries[idx].player);
-				result.value.push(entries[idx].value);
+				leaderboardData.push(entries[idx].player);
+				leaderboardData.push(entries[idx].value);
+			}
+		}
+	} else {
+		var requestParams = {
+			"playerId": getPlayerLeaderboardId(),
+			"readOnly": true
+		};
+
+		requestParams['gameId'] = script.titleId;
+		var leaderboardName = args.leaderboardName;
+
+		if (isLeaderboardTierSupported(args.leaderboardName)) {
+			var playerTierIndex = getPlayerTierIndex();
+			if (playerTierIndex >= 0) {
+				var topTierIndex = getTopTierId();
+				if (topTierIndex > 0 && topTierIndex == playerTierIndex) {
+					requestParams['gameId'] = script.titleId + TITLE_ID_TOP_TIER_SUFFIX;
+				}
+
+				leaderboardName = args.leaderboardName + TIER_LEADERBOARD_SUFFIX + playerTierIndex;
 			}
 		}
 
-		return result;
-	}
+		var cheater = isPlayerBannedInternal();
+		requestParams['leaderboardName'] = (cheater)
+			? convertLeaderboardNameToCheaters(leaderboardName)
+			: leaderboardName;
 
-	var requestParams = {
-		"playerId": getPlayerLeaderboardId(),
-		"readOnly": true
-	};
+		var requestUrl = getUWSServer() + "Leaderboard/GetPlayerLeaderboard";
+		var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 
-	requestParams['gameId'] = script.titleId;
-	requestParams['leaderboardName'] = args.leaderboardName;
+		leaderboardData = JSON.parse(rawResponse);
+		if (leaderboardData == -1) {
+			leaderboardData = [];
+		}
 
-	if (isLeaderboardTierSupported(args.leaderboardName)) {
-		var playerTierIndex = getPlayerTierIndex();
-		if (playerTierIndex >= 0) {
-			var topTierIndex = getTopTierId();
-			if (topTierIndex > 0 && topTierIndex == playerTierIndex) {
-				requestParams['gameId'] = script.titleId + TITLE_ID_TOP_TIER_SUFIX;
+		var maxLeaderboardSize = SHORT_LEADERBOARD_BUCKET_SIZE + SHORT_LEADERBOARD_BUCKET_SIZE;
+
+		if (cheater
+			&& leaderboardData.length < (maxLeaderboardSize)
+		) {
+			requestParams['leaderboardName'] = leaderboardName;
+
+			var noCheaterTier = getPlayerTierIndex(true);
+			if (noCheaterTier >= 0) {
+				requestParams['leaderboardName'] += (TIER_LEADERBOARD_SUFFIX + noCheaterTier);
+			}
+			var noCheaterRawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
+			var noCheaterLeaderboardData = JSON.parse(noCheaterRawResponse);
+			if (noCheaterLeaderboardData == -1) {
+				noCheaterLeaderboardData = [];
 			}
 
-			requestParams['leaderboardName'] = args.leaderboardName + '_Tier' + playerTierIndex;
+			if (noCheaterLeaderboardData.length > 0) {
+				for(var idx = 0;
+					idx < noCheaterLeaderboardData.length - 1
+						&& leaderboardData.length < maxLeaderboardSize;
+					idx += 2
+				) {
+					var player = noCheaterLeaderboardData[idx];
+					var score = noCheaterLeaderboardData[idx + 1];
+
+					if (player
+						&& score
+						&& leaderboardData.indexOf(player) < 0
+						&& score > 0
+					) {
+						leaderboardData.push(player);
+						leaderboardData.push(score);
+					}
+				}
+
+				var leaderboardDataObjects = [];
+				for (var idx = 0; idx < leaderboardData.length; idx += 2) {
+					leaderboardDataObjects.push({
+						"player" : leaderboardData[idx],
+						"score" : leaderboardData[idx + 1]
+					});
+				}
+
+				leaderboardDataObjects.sort((x, y) => {
+					return y.score - x.score;
+				});
+
+				leaderboardData = [];
+				for(var idx = 0; idx < leaderboardDataObjects.length; idx++) {
+					var dataPoint = leaderboardDataObjects[idx];
+					leaderboardData.push(dataPoint.player);
+					leaderboardData.push(dataPoint.score);
+				}
+			}
 		}
 	}
 
-	var requestUrl = getUWSServer() + "Leaderboard/GetPlayerLeaderboard";
-	var rawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
-	var leaderboardData = JSON.parse(rawResponse);
-	if (leaderboardData == -1) {
-		leaderboardData = [];
-	}
-
-	result.value = leaderboardData;
-
-	return result;
+	return { 'value' :leaderboardData };
 }
 
 handlers.getLeaderboardByName = function (args) {
 	var result = {
 		"value": {}
 	};
+
+	if (isPlayerBannedInternal()) {
+		args.leaderboardName = convertLeaderboardNameToCheaters(args.leaderboardName);
+	}
 
 	var requestParams = {};
 
@@ -429,7 +515,7 @@ var getPlayerRankInternal = function(args) {
 
 	var requestParams = {
 		"playerId": getPlayerLeaderboardId(),
-		"gameId": script.titleId + TITLE_ID_GLOBAL_SUFIX,
+		"gameId": script.titleId + TITLE_ID_GLOBAL_SUFFIX,
 		"leaderboardName": args.leaderboardName
 	};
 
@@ -544,24 +630,29 @@ handlers.updatePlayerLeaderboardTier = function(args) {
 	var result = {'value': -1};
 
 	var nextTier = -1;
-	if (!isPlayerBannedInternal(currentPlayerId)) {
-		var data = server.GetTitleInternalData({
-			"Keys" : [ "eventLeaderboardTutorial" ]
-		});
+	var data = server.GetTitleInternalData({
+		"Keys" : [ "eventLeaderboardTutorial" ]
+	});
 
-		var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
+	var tutorialLeaderboardData = JSON.parse(data.Data["eventLeaderboardTutorial"]);
 
-		if (tutorialLeaderboardData
-			&& tutorialLeaderboardData.leaderboardName
-			&& tutorialLeaderboardData === args.leaderboardName
-		) {
-			nextTier = 0;
-		} else {
-			var rankData = getPlayerRankInternal(args);
-			nextTier = (rankData != null && rankData != undefined)
-				? calculateNextTier(rankData.rank, rankData.size)
-				: 0;
-		}
+	if (tutorialLeaderboardData
+		&& tutorialLeaderboardData.leaderboardName
+		&& tutorialLeaderboardData === args.leaderboardName
+	) {
+		nextTier = 0;
+	} else {
+		var rankData = getPlayerRankInternal(args);
+		nextTier = (rankData != null && rankData != undefined)
+			? calculateNextTier(rankData.rank, rankData.size)
+			: 0;
+	}
+
+	// reset tier for cheaters here to
+	// minimize race conditions with
+	// banning
+	if (isPlayerBannedInternal()) {
+		nextTier = -1;
 	}
 
 	result.value = updatePlayerTierData(null, {'tier': nextTier}, args.leaderboardName);
@@ -594,31 +685,3 @@ var getUWSServer = function () {
 	}
 	return result;
 };
-
-var GetLogglyTag = function () {
-	var result = null;
-
-	var playfabGameId = script.titleId;
-	if (playfabGameId != null && playfabGameId != undefined) {
-		if (SERVER_CONFIG.logglyTag.hasOwnProperty(playfabGameId)) {
-			result = SERVER_CONFIG.logglyTag[playfabGameId];
-		} else {
-			log.debug("Unable to locate Loggly environment tag for " + playfabGameId);
-		}
-	}
-
-	return result;
-}
-
-var SendLogglyError = function (source, content) {
-	var logglyTag = this.GetLogglyTag();
-
-	content["source"] = source;
-
-	if (logglyTag != null && logglyTag != undefined) {
-		content["logglyTag"] = logglyTag;
-		http.request("http://logs-01.loggly.com/inputs/" + LOGGLY_TOKEN + "/tag/" + logglyTag + "/", "post", JSON.stringify(content), "application/json");
-	}
-
-	console.log(JSON.stringify(content));
-}
