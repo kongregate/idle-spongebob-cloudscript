@@ -216,6 +216,11 @@ var banUserInternally = function (args, behaviorOverride) {
 			args.leaderboardName,
 			maxScore.score
 		);
+
+		// LS NOTE : We no longer reset leaderboard tier
+		// as we use the original leaderboard to pad the
+		// cheater leaderboard if cheater leaderboard has
+		// less entries than original leaderboard
 	}
 
 	updateBanLog(banData);
