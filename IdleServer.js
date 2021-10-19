@@ -429,7 +429,9 @@ handlers.getPlayerLeaderboard = function (args) {
 		leaderboardData = [];
 	}
 
-	if (cheater) {
+	if (cheater
+		&& leaderboardData.length < 100
+	) {
 		requestParams['leaderboardName'] = leaderboardName;
 
 		var noCheaterTier = getPlayerTierIndex(true);
@@ -439,6 +441,21 @@ handlers.getPlayerLeaderboard = function (args) {
 		var noCheaterRawResponse = http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 		var noCheaterLeaderboardData = JSON.parse(noCheaterRawResponse);
 		result['noCheaterLeaderboardData'] = noCheaterLeaderboardData;
+
+		var copyStartIdx = 0;
+		for(var idx = noCheaterLeaderboardData.length - 2; idx >= 0 ; idx -= 2) {
+			if (leaderboardData[leaderboardData.length + 1] <= noCheaterLeaderboardData[idx]) {
+				copyStartIdx = idx;
+				break;
+			}
+		}
+
+		while(leaderboardData.length < 100) {
+			leaderboardData.push(noCheaterLeaderboardData[copyStartIdx]);
+			copyStartIdx++;
+			leaderboardData.push(noCheaterLeaderboardData[copyStartIdx]);
+			copyStartIdx++;
+		}
 	}
 
 	result.value = leaderboardData;
