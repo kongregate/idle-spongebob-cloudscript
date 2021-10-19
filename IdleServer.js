@@ -260,9 +260,7 @@ var updatePlayerTierData = function(currentTierData, newTierData, context) {
  * }
  */
 handlers.updatePlayerStatistics = function (args) {
-	var updates = -1;
-
-	updates = 0;
+	var updates = 0;
 
 	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
@@ -444,7 +442,7 @@ handlers.getPlayerLeaderboard = function (args) {
 
 			if (noCheaterLeaderboardData.length > 0) {
 				for(var idx = 0;
-					idx < noCheaterLeaderboardData.length
+					idx < noCheaterLeaderboardData.length - 1
 						&& leaderboardData.length < maxLeaderboardSize;
 					idx += 2
 				) {
