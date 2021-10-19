@@ -170,7 +170,10 @@ var banUserInternally = function (args, behaviorOverride) {
 		behaviorOverride
     );
 
-	var banData = { "ban": data[IS_CHEATER] };
+	var banData = {
+		'origin': (args.origin && args.origin.trim()) ? args.origin : "clientAutoBan",
+		"ban": data[IS_CHEATER]
+	};
 
 	if (args != null
 		&& args != undefined
@@ -180,23 +183,26 @@ var banUserInternally = function (args, behaviorOverride) {
 	) {
 		// find player entries in global leaderboard
 		var playerToResetToScore = getPlayersWithScoreToReset(args.leaderboardName);
+		var maxScore = 0;
 
-		// get max player score in leaderboard
-		// and reset all scores
-		var maxScore = playerToResetToScore[getPlayerLeaderboardId()];
+		if (playerToResetToScore) {
+			// get max player score in leaderboard
+			// and reset all scores
+			maxScore = playerToResetToScore[getPlayerLeaderboardId()];
 
-		var playerTier = getPlayerTierIndex(true);
+			var playerTier = getPlayerTierIndex(true);
 
-		for(var fieldName in playerToResetToScore) {
-			sendUwsUpdateLeaderboardRequest(
-				fieldName,
-				args.leaderboardName,
-				0,
-				'Last',
-				playerTier,
-				true
-			);
-		};
+			for(var fieldName in playerToResetToScore) {
+				sendUwsUpdateLeaderboardRequest(
+					fieldName,
+					args.leaderboardName,
+					0,
+					'Last',
+					playerTier,
+					true
+				);
+			};
+		}
 
 		// send write request with player flagged as cheater
 		banData['leaderboard'] = args.leaderboardName;
@@ -215,6 +221,8 @@ var banUserInternally = function (args, behaviorOverride) {
 	}
 
 	updateBanLog(banData);
+
+	SendLogglyError(banData.origin, banData)
 
 	return updateResult;
 }
