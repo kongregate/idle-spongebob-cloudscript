@@ -183,21 +183,11 @@ var banUserInternally = function (args, behaviorOverride) {
 
 		// get max player score in leaderboard
 		// and reset all scores
-		var maxScore = {
-			'playerId' : null,
-			'score' : -1
-		};
+		var maxScore = playerToResetToScore[getPlayerLeaderboardId()];
 
 		var playerTier = getPlayerTierIndex(true);
 
 		for(var fieldName in playerToResetToScore) {
-			if (maxScore.score < 0
-				|| playerToResetToScore[fieldName] > maxScore.score
-			) {
-				maxScore.playerId = fieldName;
-				maxScore.score = playerToResetToScore[fieldName];
-			}
-
 			sendUwsUpdateLeaderboardRequest(
 				fieldName,
 				args.leaderboardName,
@@ -210,12 +200,12 @@ var banUserInternally = function (args, behaviorOverride) {
 
 		// send write request with player flagged as cheater
 		banData['leaderboard'] = args.leaderboardName;
-		banData['score'] = maxScore.score;
+		banData['score'] = maxScore;
 
 		sendUwsUpdateLeaderboardRequest(
-			maxScore.playerId,
+			getPlayerLeaderboardId(),
 			args.leaderboardName,
-			maxScore.score
+			maxScore
 		);
 
 		// LS NOTE : We no longer reset leaderboard tier
