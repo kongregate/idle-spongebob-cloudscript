@@ -262,6 +262,8 @@ var updatePlayerTierData = function(currentTierData, newTierData, context) {
 handlers.updatePlayerStatistics = function (args) {
 	var updates = 0;
 
+	var dataValue = {};
+
 	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
 	});
@@ -291,6 +293,8 @@ handlers.updatePlayerStatistics = function (args) {
 					"Data" : data
 				});
 			} else {
+				dataValue['args'] = args;
+
 				var updateType = args.statistics[i]["AggregationMethod"];
 
 				updatePlayerStatistic(leaderboardName, value, updateType, undefined, args.reservedId);
@@ -300,7 +304,9 @@ handlers.updatePlayerStatistics = function (args) {
 		}
 	}
 
-	return { "value":updates };
+	dataValue['updates'] = updates;
+	// return { "value":updates };
+	return dataValue;
 };
 
 var updatePlayerStatistic = function (leaderboardName, value, updateType, tierOverride, reservedId) {
