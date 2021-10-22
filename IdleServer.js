@@ -293,7 +293,7 @@ handlers.updatePlayerStatistics = function (args) {
 			} else {
 				var updateType = args.statistics[i]["AggregationMethod"];
 
-				updatePlayerStatistic(leaderboardName, value, updateType);
+				updatePlayerStatistic(leaderboardName, value, updateType, undefined, args.reservedId);
 			}
 
 			updates++;
@@ -303,13 +303,15 @@ handlers.updatePlayerStatistics = function (args) {
 	return { "value":updates };
 };
 
-var updatePlayerStatistic = function (leaderboardName, value, updateType, tierOverride) {
+var updatePlayerStatistic = function (leaderboardName, value, updateType, tierOverride, reservedId) {
 	sendUwsUpdateLeaderboardRequest(
 		getPlayerLeaderboardId(),
 		leaderboardName,
 		value,
 		updateType,
-		tierOverride
+		tierOverride,
+		undefined,
+		reservedId
 	);
 }
 
@@ -318,13 +320,15 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
 	value,
 	updateType,
 	tierOverride,
-	doNotCheckCheater
+	doNotCheckCheater,
+	reservedId
 ) {
 	var requestParams = {
 		"playerId": playerRedisKey,
 		"value": value,
 		"updateType": updateType
 	};
+
 	var requestUrl = getUWSServer() + "Leaderboard/UpdatePlayerStatistic";
 
 	requestParams['gameId'] = script.titleId;
@@ -351,11 +355,14 @@ var sendUwsUpdateLeaderboardRequest = function(playerRedisKey,
 
 	if (isCheater) {
 		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
+	} else if (reservedId != undefined && reservedId != null) {
+		requestParams['reservedId'] = reservedId;
 	}
 	http.request(requestUrl, "post", JSON.stringify(requestParams), "application/json");
 
 	requestParams['gameId'] = script.titleId + TITLE_ID_GLOBAL_SUFFIX;
 	requestParams['leaderboardName'] = leaderboardName;
+	delete requestParams.reservedId;
 	if (isCheater) {
 		requestParams['leaderboardName'] = convertLeaderboardNameToCheaters(requestParams['leaderboardName']);
 	}

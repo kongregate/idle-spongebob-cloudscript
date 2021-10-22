@@ -258,7 +258,7 @@ handlers.unbanUser = function (args) {
 		var playerTier = args.tier;
 
 		updatePlayerTierData(null, {'tier': playerTier}, "unbanUser:"+args.leaderboardName);
-		updatePlayerStatistic(args.leaderboardName, args.value, "Maximum", playerTier);
+		updatePlayerStatistic(args.leaderboardName, args.value, "Maximum", undefined, args.reservedId);
 
 		banData['tier'] = playerTier;
 		banData['leaderbord'] = args.leaderboardName;
