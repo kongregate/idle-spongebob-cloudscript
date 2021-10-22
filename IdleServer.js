@@ -263,7 +263,7 @@ handlers.updatePlayerStatistics = function (args) {
 	var updates = 0;
 
 	var dataValue = {};
-	dataValue['argsUWS'] = args;
+	dataValue['args'] = args;
 
 	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
