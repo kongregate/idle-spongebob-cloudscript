@@ -263,6 +263,7 @@ handlers.updatePlayerStatistics = function (args) {
 	var updates = 0;
 
 	var dataValue = {};
+	dataValue['argsUWS'] = args;
 
 	var data = server.GetTitleInternalData({
 		"Keys" : [ "eventLeaderboardTutorial" ]
@@ -293,7 +294,7 @@ handlers.updatePlayerStatistics = function (args) {
 					"Data" : data
 				});
 			} else {
-				dataValue['args'] = args;
+				dataValue['argsUWS'] = args;
 
 				var updateType = args.statistics[i]["AggregationMethod"];
 
