@@ -16,7 +16,7 @@ var getCheaterData = function(playerId, keysArray) {
 	return server.GetUserInternalData(data);
 }
 
-var setCheaterData = function(playerId, updateData, keysToDeleteArray, behaviorOverride) {
+var setCheaterData = function(playerId, updateData, keysToDeleteArray) {
     var data = {};
     data["PlayFabId"] = playerId;
 
@@ -26,15 +26,6 @@ var setCheaterData = function(playerId, updateData, keysToDeleteArray, behaviorO
 
     if (keysToDeleteArray) {
         data["KeysToRemove"] = keysToDeleteArray;
-    }
-
-	var behavior = (behaviorOverride)
-		? behaviorOverride
-		: CHEATER_DATA_BEHAVIOR;
-
-    if (behavior === CHEATER_DATA_MIGRATION) {
-		server.UpdateUserInternalData(data);
-		return server.UpdateUserReadOnlyData(data);
     }
 
 	return server.UpdateUserInternalData(data);
@@ -162,15 +153,11 @@ var getPlayersWithScoreToReset = function(leaderboardName) {
 	return result;
 }
 
-var banUserInternally = function (args, behaviorOverride) {
+var banUserInternally = function (args) {
 	var data = {};
 	data[IS_CHEATER] = true;
 
-	var updateResult = setCheaterData(currentPlayerId,
-        data,
-        undefined,
-		behaviorOverride
-    );
+	var updateResult = setCheaterData(currentPlayerId, data);
 
 	var banData = {
 		'origin': (args.origin && args.origin.trim()) ? args.origin : "clientAutoBan",
@@ -229,12 +216,12 @@ var banUserInternally = function (args, behaviorOverride) {
 // only to be used by 1.103 and older devices
 // and admin tool
 handlers.banUser = function(args) {
-	return banUserInternally(args, CHEATER_DATA_MIGRATION);
+	return banUserInternally(args);
 }
 
 // new client api to trigger auto banning
 handlers.recordTimestamp = function(args) {
-	return banUserInternally(args, CHEATER_DATA_INTERNAL);
+	return banUserInternally(args);
 }
 
 handlers.unbanUser = function (args) {
