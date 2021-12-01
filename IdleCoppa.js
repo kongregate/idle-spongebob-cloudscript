@@ -9,7 +9,8 @@ handlers.setCoppaModel = function(args) {
 
     result[COPPA] = {
         "hasAdultConsent": (args.hasAdultConsent === true),
-        "isMinor": (args.isMinor === true)
+        "isMinor": (args.isMinor === true),
+        "socialNetworkAccess": (args.socialNetworkAccess === true)
     };
 
     try {
@@ -32,7 +33,6 @@ handlers.setCoppaModel = function(args) {
 };
 
 handlers.serverOverwriteCoppaData = function(args) {
-
     var result = {
         "success": false
     };
