@@ -1,4 +1,6 @@
 
+// NOTE : server.DeletePlayer needs to be enabled in game web portal
+
 handlers.deleteMyAccount = function(args) {
     var result = {};
 
